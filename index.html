@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ashgrove">
+<!-- artifact:head -->
 <title>Lights Out at Ashgrove</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,8 +38,8 @@ body { background: var(--void); color: var(--bone); overflow: hidden; font-famil
 
 .overlay {
   position: fixed; inset: 0; z-index: 20;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px;
-  text-align: center; background: color-mix(in srgb, var(--void) 78%, transparent);
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  text-align: center; background: color-mix(in srgb, var(--void) 80%, transparent);
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: calc(24px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
@@ -52,38 +53,58 @@ h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; line-height: 
 h1 { font-size: clamp(2.4rem, 9vw, 5.2rem); text-shadow: 0 0 28px color-mix(in srgb, var(--blood) 55%, transparent); }
 h2 { font-size: clamp(2rem, 7vw, 3.8rem); }
 h2.dead { color: var(--blood); }
-.sub { max-width: 48ch; line-height: 1.65; color: var(--bone); opacity: .82; margin: 0; font-size: .98rem; }
+.sub { max-width: 52ch; line-height: 1.65; color: var(--bone); opacity: .85; margin: 0; font-size: .98rem; }
 .controls { display: grid; grid-template-columns: auto auto; gap: 6px 18px; text-align: left; font-size: .85rem; color: var(--ash); margin: 0; }
 .controls dt { color: var(--bone); white-space: nowrap; }
 .controls dd { margin: 0; }
-.small { font-size: .78rem; color: var(--ash); margin: 0; }
+.small { font-size: .78rem; color: var(--ash); margin: 0; max-width: 56ch; line-height: 1.5; }
 button {
-  font-family: var(--type); font-size: 1.1rem; letter-spacing: .06em;
+  font-family: var(--type); font-size: 1.05rem; letter-spacing: .05em;
   background: transparent; color: var(--bone); border: 1px solid var(--ash);
-  padding: 12px 30px; cursor: pointer; transition: color .2s, border-color .2s, box-shadow .2s;
+  padding: 12px 26px; cursor: pointer; transition: color .2s, border-color .2s, box-shadow .2s;
   touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
-button:hover, button:focus-visible { border-color: var(--sodium); color: var(--sodium); outline: none; box-shadow: 0 0 22px color-mix(in srgb, var(--sodium) 25%, transparent); }
+button:hover:not(:disabled), button:focus-visible { border-color: var(--sodium); color: var(--sodium); outline: none; box-shadow: 0 0 22px color-mix(in srgb, var(--sodium) 25%, transparent); }
+button:disabled { opacity: .35; cursor: default; }
+button.primary { border-color: var(--bone); }
+
+.stagepick { display: grid; gap: 8px; justify-items: center; }
+.stages { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.stages button { font-size: .8rem; padding: 8px 12px; }
+.stages button[aria-pressed="true"] { border-color: var(--sodium); color: var(--sodium); }
+
+.code { font-family: var(--display); font-size: clamp(3rem, 14vw, 5.5rem); letter-spacing: .25em; color: var(--sodium); margin: 0; padding-left: .25em; line-height: 1; }
+#codeIn {
+  font-family: var(--display); font-size: 2.6rem; letter-spacing: .3em; text-transform: uppercase; text-align: center;
+  width: 6.2ch; padding: 6px 0 6px .3em; background: transparent; color: var(--sodium); border: 1px solid var(--ash);
+}
+#codeIn:focus { outline: none; border-color: var(--sodium); }
+.status { font-size: .9rem; color: var(--bone); margin: 0; min-height: 1.4em; }
+.meta { display: grid; gap: 4px; font-size: .9rem; color: var(--bone); margin: 0; }
+.meta b { color: var(--sodium); font-weight: 400; }
 
 #hud {
-  position: fixed; z-index: 10; display: grid; gap: 8px; font-size: .78rem; letter-spacing: .12em; text-transform: uppercase;
-  top: calc(14px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px));
-  color: var(--bone); opacity: .85; text-shadow: 0 1px 2px #000; pointer-events: none;
+  position: fixed; z-index: 10; display: grid; gap: 7px; font-size: .74rem; letter-spacing: .12em; text-transform: uppercase;
+  top: calc(12px + env(safe-area-inset-top, 0px)); left: max(16px, env(safe-area-inset-left, 0px));
+  color: var(--bone); opacity: .88; text-shadow: 0 1px 2px #000; pointer-events: none;
 }
 .hud-row { display: flex; align-items: center; gap: 10px; }
-.lbl { width: 4.6em; color: var(--ash); }
+.lbl { width: 5.4em; color: var(--ash); }
 .bar { width: 92px; height: 6px; border: 1px solid var(--ash); padding: 1px; }
 .bar i { display: block; height: 100%; width: 100%; background: var(--bone); transition: width .15s linear; }
 #batBar.low { background: var(--blood); }
-#fuseIcons { display: flex; gap: 5px; }
-#fuseIcons b { width: 9px; height: 14px; border: 1px solid var(--ash); }
-#fuseIcons b.on { background: var(--sodium); border-color: var(--sodium); box-shadow: 0 0 8px var(--sodium); }
+#objIcons { display: flex; gap: 5px; }
+#objIcons b { width: 9px; height: 14px; border: 1px solid var(--ash); }
+#objIcons b.on { background: var(--sodium); border-color: var(--sodium); box-shadow: 0 0 8px var(--sodium); }
+#mateState.down { color: var(--blood); }
 
-#msg {
-  position: fixed; z-index: 10; left: 50%; bottom: calc(34% + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
-  width: min(560px, calc(100% - 32px)); text-align: center; font-size: 1rem; color: var(--bone);
-  text-shadow: 0 0 6px #000, 0 1px 2px #000; opacity: 0; transition: opacity .5s; pointer-events: none;
+#msg, #prog {
+  position: fixed; z-index: 10; left: 50%; transform: translateX(-50%);
+  width: min(560px, calc(100% - 32px)); text-align: center; color: var(--bone);
+  text-shadow: 0 0 6px #000, 0 1px 2px #000; pointer-events: none;
 }
+#msg { bottom: calc(34% + env(safe-area-inset-bottom, 0px)); font-size: 1rem; opacity: 0; transition: opacity .5s; }
+#prog { top: 56%; font-size: .9rem; letter-spacing: .1em; color: var(--sodium); }
 #note {
   position: fixed; z-index: 11; left: 50%; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%) rotate(-1deg);
   width: min(440px, calc(100% - 32px)); background: var(--paper); color: var(--ink);
@@ -93,10 +114,12 @@ button:hover, button:focus-visible { border-color: var(--sodium); color: var(--s
 }
 #note .tag { display: block; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; opacity: .6; margin-bottom: 8px; }
 
-#touchUI { position: fixed; z-index: 12; display: flex; gap: 12px;
-  right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
-#touchUI button { padding: 0; width: 76px; height: 76px; border-radius: 50%; font-size: .85rem; background: rgba(5, 5, 6, .45); }
-#touchUI button.held { box-shadow: 0 0 18px color-mix(in srgb, var(--sodium) 35%, transparent); }
+#touchUI { position: fixed; z-index: 12; display: grid; grid-template-columns: repeat(2, 66px); gap: 10px;
+  right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(14px + env(safe-area-inset-bottom, 0px)); }
+#touchUI button { padding: 0; width: 66px; height: 66px; border-radius: 50%; font-size: .74rem; letter-spacing: .02em; line-height: 1.15; background: rgba(5, 5, 6, .45); }
+#touchUI button.held { color: var(--sodium); border-color: var(--sodium); box-shadow: 0 0 18px color-mix(in srgb, var(--sodium) 35%, transparent); }
+#touchUI button.weapon { border-color: color-mix(in srgb, var(--blood) 70%, var(--ash)); }
+#touchUI button.empty { opacity: .3; }
 #stick { position: fixed; z-index: 9; width: 120px; height: 120px; margin: -60px 0 0 -60px; border: 1px solid rgba(217, 210, 197, .35); border-radius: 50%; pointer-events: none; }
 #knob { position: absolute; left: 38px; top: 38px; width: 44px; height: 44px; border-radius: 50%; background: rgba(217, 210, 197, .28); }
 #stick.run { border-color: var(--sodium); }
@@ -104,30 +127,38 @@ button:hover, button:focus-visible { border-color: var(--sodium); color: var(--s
   top: calc(10px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
 #topBtns button { width: 46px; height: 46px; padding: 0; display: grid; place-items: center; background: rgba(5, 5, 6, .45); border-color: rgba(138, 131, 121, .6); }
 #topBtns svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+
 @media (max-height: 520px) {
-  .overlay { gap: 12px; }
+  .overlay { gap: 10px; }
   h1 { font-size: clamp(1.9rem, 7vh + 1rem, 3rem); }
+  h2 { font-size: clamp(1.7rem, 6vh + 1rem, 2.6rem); }
   .sub { font-size: .84rem; line-height: 1.5; }
   .controls { font-size: .76rem; gap: 3px 14px; }
   .eyebrow, .small { font-size: .7rem; }
+  button { padding: 9px 18px; font-size: .95rem; }
+  .code { font-size: 3rem; }
 }
-#touchUI button.held { color: var(--sodium); border-color: var(--sodium); }
-
 @media (prefers-reduced-motion: reduce) { #msg, #note, button, .bar i { transition: none; } }
 </style>
+<!-- /artifact:head -->
 </head>
 <body>
-
-<canvas id="game" aria-label="First-person view of the hospital ward"></canvas>
+<canvas id="game" aria-label="First-person view of the hospital"></canvas>
 
 <div id="hud" hidden>
-  <div class="hud-row"><span class="lbl">Fuses</span><span id="fuseIcons"></span></div>
+  <div class="hud-row"><span class="lbl" id="objLbl">Fuses</span><span id="objIcons"></span></div>
   <div class="hud-row"><span class="lbl">Lamp</span><div class="bar"><i id="batBar"></i></div></div>
   <div class="hud-row"><span class="lbl">Breath</span><div class="bar"><i id="stamBar"></i></div></div>
+  <div class="hud-row"><span class="lbl">Kit</span><span id="kit"></span></div>
+  <div class="hud-row" id="mateRow" hidden><span class="lbl">Partner</span><span id="mateState"></span></div>
 </div>
 <div id="msg" role="status"></div>
+<div id="prog"></div>
 <div id="note" aria-live="polite"></div>
-<div id="touchUI" hidden><button id="tRun" type="button">Run</button><button id="tLight" type="button">Lamp</button></div>
+<div id="touchUI" hidden>
+  <button id="tFlash" class="weapon" type="button">Flash</button><button id="tFlare" class="weapon" type="button">Flare</button>
+  <button id="tRun" type="button">Run</button><button id="tLight" type="button">Lamp</button>
+</div>
 <div id="stick" hidden><div id="knob"></div></div>
 <div id="topBtns" hidden>
   <button id="bFull" type="button" aria-label="Toggle fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
@@ -135,674 +166,83 @@ button:hover, button:focus-visible { border-color: var(--sodium); color: var(--s
 </div>
 
 <section id="title" class="overlay">
-  <p class="eyebrow">Ashgrove Sanatorium &middot; East Wing &middot; 03:12</p>
+  <p class="eyebrow">Ashgrove Sanatorium &middot; closed 1974</p>
   <h1>Lights Out at Ashgrove</h1>
-  <p class="sub">The power failed an hour ago. The service lift needs five fuses, and the night staff hid them all over the east wing. Something tall walks these halls. It is drawn to light and to running feet.</p>
-  <dl class="controls" id="controlsList">
-    <dt>W A S D</dt><dd>Walk</dd>
-    <dt>Mouse / &larr; &rarr;</dt><dd>Look around</dd>
-    <dt>Shift</dt><dd>Run (it can hear you)</dd>
-    <dt>F / Right-click</dt><dd>Lamp on or off</dd>
-    <dt>Esc</dt><dd>Pause</dd>
-  </dl>
+  <p class="sub">Four floors of a dead hospital, and something different waiting on each one. Find what opens the way out, and don't let it reach you. Play alone, or bring one friend in with a room code.</p>
   <div class="actions">
-    <button id="start" type="button">Enter the ward</button>
+    <button id="bSolo" class="primary" type="button">Play alone</button>
+    <button id="bHost" type="button">Host co-op</button>
+    <button id="bJoin" type="button">Join co-op</button>
     <button id="install" type="button" hidden>Install app</button>
   </div>
+  <p class="small" id="onlineNote" hidden></p>
+  <div class="stagepick">
+    <p class="eyebrow">Start from</p>
+    <div class="stages" id="stagePick"></div>
+  </div>
+  <dl class="controls" id="controlsList">
+    <dt>W A S D</dt><dd>Walk (hold C to sneak)</dd>
+    <dt>Mouse / &larr; &rarr;</dt><dd>Look around</dd>
+    <dt>Shift</dt><dd>Run</dd>
+    <dt>F / Right-click</dt><dd>Lamp on or off</dd>
+    <dt>Q / Left-click</dt><dd>Camera flash</dd>
+    <dt>E</dt><dd>Light a flare</dd>
+    <dt>Esc</dt><dd>Pause</dd>
+  </dl>
   <p class="small" id="hint">Headphones recommended. Sound plays once you start.</p>
   <p class="small" id="iosHint" hidden>To install on iPhone: tap Share, then Add to Home Screen.</p>
 </section>
 
+<section id="lobby" class="overlay" hidden>
+  <p class="eyebrow" id="lobbyEyebrow">Co-op</p>
+  <div id="hostBox" hidden>
+    <p class="sub">Give your partner this room code.</p>
+    <p class="code" id="roomCode">&middot;&middot;&middot;&middot;</p>
+  </div>
+  <div id="joinBox" hidden>
+    <p class="sub">Type the room code from your partner&rsquo;s screen.</p>
+    <p><input id="codeIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code" inputmode="text"></p>
+  </div>
+  <p class="status" id="lobbyStatus"></p>
+  <div class="actions">
+    <button id="lobbyGo" class="primary" type="button">Start</button>
+    <button id="lobbyBack" type="button">Back</button>
+  </div>
+</section>
+
+<section id="card" class="overlay" hidden>
+  <p class="eyebrow" id="cardPlace"></p>
+  <h2 id="cardName"></h2>
+  <div class="meta">
+    <span>It walks here: <b id="cardMon"></b></span>
+    <span>Objective: <b id="cardObj"></b></span>
+  </div>
+  <p class="sub" id="cardIntro"></p>
+  <p class="small" id="cardTip"></p>
+  <button id="cardGo" class="primary" type="button">Begin</button>
+  <p class="status" id="cardWait" hidden>Waiting for the host to begin&hellip;</p>
+</section>
+
 <section id="pause" class="overlay" hidden>
   <h2>Paused</h2>
-  <p class="sub">It is still out there. It waits too.</p>
+  <p class="sub" id="pauseText">It is still out there. It waits too.</p>
   <div class="actions">
-    <button id="resume" type="button">Resume</button>
-    <button id="restart" type="button">Restart</button>
+    <button id="resume" class="primary" type="button">Resume</button>
+    <button id="pRestart" type="button">Restart stage</button>
+    <button id="pLeave" type="button">Leave to title</button>
   </div>
 </section>
 
 <section id="end" class="overlay" hidden>
   <h2 id="endTitle"></h2>
   <p id="endText" class="sub"></p>
-  <button id="again" type="button">Go back in</button>
+  <div class="actions">
+    <button id="again" class="primary" type="button">Try this stage again</button>
+    <button id="toTitle" type="button">Title screen</button>
+  </div>
+  <p class="status" id="endWait" hidden>Waiting for the host&hellip;</p>
 </section>
 
-<script>
-(() => {
-'use strict';
-const $ = id => document.getElementById(id);
-const cvs = $('game'), ctx = cvs.getContext('2d');
-const R = Math.random, rand = n => (R() * n) | 0, clamp = (v, a, b) => v < a ? a : v > b ? b : v;
-const T = 64, TM = 63, MW = 23, MH = 23, NFUSE = 5;
-const COARSE = matchMedia('(pointer: coarse)').matches;
-const NOISE = new Float32Array(65536); for (let i = 0; i < 65536; i++) NOISE[i] = R() - .5;
-
-/* ---------- screen buffers ---------- */
-let W = 320, H = 200, F = 200, low, lctx, img, px, zbuf, cone, vig;
-function resize() {
-  cvs.width = innerWidth; cvs.height = innerHeight;
-  H = COARSE ? 150 : 200; W = clamp(Math.round(H * innerWidth / Math.max(1, innerHeight)), 100, 480);
-  F = Math.min(H, W * 0.75);
-  low = document.createElement('canvas'); low.width = W; low.height = H; lctx = low.getContext('2d');
-  img = lctx.createImageData(W, H); px = img.data; zbuf = new Float32Array(W);
-  for (let i = 3; i < px.length; i += 4) px[i] = 255;
-  cone = new Float32Array(W * H); vig = new Float32Array(W * H);
-  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-    const dx = (x - W / 2) / H, dy = (y - H / 2) / H, r2 = dx * dx + dy * dy, i = y * W + x;
-    cone[i] = 0.08 + Math.exp(-r2 / 0.03) + Math.exp(-r2 / 0.12) * 0.3;
-    vig[i] = clamp(1.2 - Math.sqrt(dx * dx * 0.6 + dy * dy * 1.3) * 1.5, 0.12, 1);
-  }
-}
-
-/* ---------- procedural textures ---------- */
-function mk(draw) { const c = document.createElement('canvas'); c.width = c.height = T; const g = c.getContext('2d'); draw(g); return c; }
-function grit(g, amt) { const d = g.getImageData(0, 0, T, T); for (let i = 0; i < d.data.length; i += 4) { if (!d.data[i + 3]) continue; const n = (R() - .5) * amt; d.data[i] += n; d.data[i + 1] += n; d.data[i + 2] += n; } g.putImageData(d, 0, 0); }
-function stain(g, n, col, maxY) { for (let i = 0; i < n; i++) { const x = R() * T, y = R() * maxY, r = 4 + R() * 14, gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, `rgba(${col},.5)`); gr.addColorStop(1, `rgba(${col},0)`); g.fillStyle = gr; g.fillRect(0, 0, T, T); } }
-function tex(c, ec) {
-  const d = c.getContext('2d').getImageData(0, 0, T, T).data, e = new Uint8Array(T * T);
-  if (ec) { const ed = ec.getContext('2d').getImageData(0, 0, T, T).data; for (let i = 0; i < T * T; i++) e[i] = ed[i * 4 + 3] > 90 ? 1 : 0; }
-  return { d, e };
-}
-function wallBase(g) {
-  g.fillStyle = '#5d6351'; g.fillRect(0, 0, T, T);
-  for (let x = 0; x < T; x += 8) { g.fillStyle = 'rgba(28,34,24,.28)'; g.fillRect(x, 0, 3, 44); }
-  g.fillStyle = 'rgba(210,200,160,.13)';
-  for (let y = 4; y < 42; y += 10) for (let x = 2; x < T; x += 8) g.fillRect(x + ((y / 10 | 0) % 2) * 4, y, 2, 3);
-  g.fillStyle = '#3b2b1e'; g.fillRect(0, 44, T, 20);
-  g.fillStyle = '#22180f'; g.fillRect(0, 44, T, 2); g.fillRect(0, 62, T, 2);
-  for (let x = 0; x < T; x += 16) g.fillRect(x, 46, 1, 16);
-  stain(g, 6, '58,38,14', 46);
-  for (let i = 0; i < 6; i++) { g.fillStyle = 'rgba(38,24,10,.35)'; g.fillRect(rand(T), rand(20), 1, 10 + R() * 30); }
-}
-const TEX = {};
-function buildTextures() {
-  TEX.wall = tex(mk(g => { wallBase(g); grit(g, 26); }));
-  TEX.tally = tex(mk(g => {
-    wallBase(g); g.strokeStyle = 'rgba(25,14,8,.85)'; g.lineWidth = 1;
-    for (let k = 0; k < 4; k++) { const ox = 8 + k * 13, oy = 12 + (k % 2) * 9; g.beginPath(); for (let i = 0; i < 4; i++) { g.moveTo(ox + i * 2.5, oy); g.lineTo(ox + i * 2.5 + 1, oy + 10); } g.moveTo(ox - 2, oy + 8); g.lineTo(ox + 10, oy + 2); g.stroke(); }
-    g.fillStyle = 'rgba(70,12,8,.55)'; for (let i = 0; i < 5; i++) g.fillRect(36 + i * 3, 30 + (i % 2) * 2, 2, 7 + i);
-    grit(g, 26);
-  }));
-  TEX.words = tex(mk(g => {
-    wallBase(g); g.fillStyle = 'rgba(96,14,10,.9)'; g.font = 'bold 9px monospace'; g.textAlign = 'center';
-    g.fillText('IT SEES', 32, 18); g.fillText('LIGHT', 32, 29);
-    for (let i = 0; i < 7; i++) g.fillRect(14 + rand(36), 30, 1, 4 + rand(12));
-    grit(g, 26);
-  }));
-  TEX.floor = tex(mk(g => {
-    for (let y = 0; y < 2; y++) for (let x = 0; x < 2; x++) { g.fillStyle = (x + y) % 2 ? '#4a463f' : '#77736a'; g.fillRect(x * 32, y * 32, 32, 32); }
-    g.fillStyle = '#2a2824'; g.fillRect(0, 0, T, 1); g.fillRect(0, 32, T, 1); g.fillRect(0, 0, 1, T); g.fillRect(32, 0, 1, T);
-    stain(g, 4, '40,30,18', T); grit(g, 30);
-  }));
-  TEX.ceil = tex(mk(g => {
-    g.fillStyle = '#3c3a36'; g.fillRect(0, 0, T, T);
-    g.fillStyle = '#26241f'; g.fillRect(0, 0, T, 1); g.fillRect(0, 0, 1, T); g.fillRect(0, 32, T, 1); g.fillRect(32, 0, 1, T);
-    stain(g, 3, '62,48,24', T); grit(g, 22);
-  }));
-  const door = on => {
-    const draw = (g, emissiveOnly) => {
-      if (!emissiveOnly) {
-        const gr = g.createLinearGradient(0, 0, T, 0); gr.addColorStop(0, '#4b4f53'); gr.addColorStop(.5, '#7a7f84'); gr.addColorStop(1, '#4b4f53');
-        g.fillStyle = gr; g.fillRect(0, 0, T, T);
-        g.fillStyle = '#1a1b1c'; g.fillRect(0, 0, T, 4); g.fillRect(0, 0, 5, T); g.fillRect(T - 5, 0, 5, T); g.fillRect(31, 16, 2, 48);
-        g.fillStyle = '#2b2d2f'; g.fillRect(8, 16, 48, 2);
-        stain(g, 3, '70,40,20', T); grit(g, 18);
-        g.fillStyle = '#111'; g.fillRect(26, 5, 12, 9);
-      }
-      g.fillStyle = on ? '#5dff7a' : '#ff2a1a'; g.fillRect(29, 7, 6, 5);
-    };
-    const c = mk(g => draw(g, false)), e = mk(g => draw(g, true));
-    return tex(c, e);
-  };
-  TEX.doorOff = door(false); TEX.doorOn = door(true);
-
-  const fuseDraw = (g, em) => {
-    if (!em) { g.fillStyle = '#7a6235'; g.fillRect(25, 38, 14, 5); g.fillRect(25, 59, 14, 5); g.fillStyle = 'rgba(200,200,190,.9)'; g.fillRect(27, 43, 10, 16); }
-    g.fillStyle = '#ffb347'; g.fillRect(31, 43, 2, 16); g.fillStyle = '#c96a1c'; g.fillRect(28, 46, 2, 10); g.fillRect(34, 46, 2, 10);
-  };
-  TEX.fuse = tex(mk(g => fuseDraw(g, false)), mk(g => fuseDraw(g, true)));
-  const batDraw = (g, em) => {
-    if (!em) { g.fillStyle = '#2f3d2b'; g.fillRect(24, 44, 16, 20); g.fillStyle = '#b8b29a'; g.fillRect(24, 50, 16, 5); g.fillStyle = '#888'; g.fillRect(29, 41, 6, 3); }
-    g.fillStyle = '#9dff6a'; g.fillRect(31, 58, 2, 2);
-  };
-  TEX.bat = tex(mk(g => batDraw(g, false)), mk(g => batDraw(g, true)));
-  const monDraw = (g, em) => {
-    if (!em) {
-      g.fillStyle = '#0c0a0a'; g.strokeStyle = '#0c0a0a';
-      g.fillRect(27, 40, 3, 24); g.fillRect(34, 40, 3, 24);
-      g.beginPath(); g.moveTo(24, 15); g.lineTo(40, 15); g.lineTo(37, 43); g.lineTo(27, 43); g.closePath(); g.fill();
-      g.lineWidth = 2.2; g.beginPath(); g.moveTo(25, 17); g.quadraticCurveTo(16, 34, 19, 57); g.moveTo(39, 17); g.quadraticCurveTo(48, 34, 45, 57); g.stroke();
-      g.lineWidth = 1; g.beginPath();
-      for (const [hx, s] of [[19, -1], [45, 1]]) for (let f = -1; f <= 1; f++) { g.moveTo(hx, 57); g.lineTo(hx + f * 1.5 + s, 62); }
-      g.stroke();
-      g.fillRect(30, 10, 4, 6);
-      g.fillStyle = '#b8b0a3'; g.beginPath(); g.ellipse(32, 6, 4.6, 6.6, 0, 0, 7); g.fill();
-      g.fillStyle = '#000'; g.beginPath(); g.ellipse(30.2, 5, 1.6, 2.2, 0, 0, 7); g.ellipse(33.8, 5, 1.6, 2.2, 0, 0, 7); g.fill();
-      g.fillRect(31, 9, 2, 3);
-    }
-    g.fillStyle = '#fff'; g.fillRect(30, 5, 1, 1); g.fillRect(34, 5, 1, 1);
-  };
-  TEX.mon = tex(mk(g => monDraw(g, false)), mk(g => monDraw(g, true)));
-}
-
-/* ---------- map ---------- */
-let map, floors, fuses, bats, door, got, powered, distCache;
-const idx = (x, y) => y * MW + x;
-function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = rand(i + 1); [a[i], a[j]] = [a[j], a[i]]; } return a; }
-function bfs(c) {
-  let f = distCache.get(c); if (f) return f;
-  f = new Int16Array(MW * MH).fill(-1); const q = [c]; f[c] = 0;
-  for (let h = 0; h < q.length; h++) { const k = q[h]; for (const o of [1, -1, MW, -MW]) { const n = k + o; if (map[n] === 0 && f[n] < 0) { f[n] = f[k] + 1; q.push(n); } } }
-  distCache.set(c, f); return f;
-}
-function genMap() {
-  map = new Uint8Array(MW * MH).fill(1); distCache = new Map();
-  const st = [[1, 1]]; map[idx(1, 1)] = 0;
-  while (st.length) {
-    const [cx, cy] = st[st.length - 1];
-    const opts = shuffle([[2, 0], [-2, 0], [0, 2], [0, -2]]).filter(([dx, dy]) => { const nx = cx + dx, ny = cy + dy; return nx > 0 && ny > 0 && nx < MW - 1 && ny < MH - 1 && map[idx(nx, ny)] === 1; });
-    if (!opts.length) { st.pop(); continue; }
-    const [dx, dy] = opts[0]; map[idx(cx + dx / 2, cy + dy / 2)] = 0; map[idx(cx + dx, cy + dy)] = 0; st.push([cx + dx, cy + dy]);
-  }
-  for (let i = 0; i < 70; i++) {
-    const x = 1 + rand(MW - 2), y = 1 + rand(MH - 2); if (map[idx(x, y)] !== 1) continue;
-    const h = map[idx(x - 1, y)] === 0 && map[idx(x + 1, y)] === 0 && map[idx(x, y - 1)] && map[idx(x, y + 1)];
-    const v = map[idx(x, y - 1)] === 0 && map[idx(x, y + 1)] === 0 && map[idx(x - 1, y)] && map[idx(x + 1, y)];
-    if (h || v) map[idx(x, y)] = 0;
-  }
-  for (let r = 0; r < 3; r++) { const rx = 3 + rand(MW - 9), ry = 3 + rand(MH - 9); for (let y = ry; y < ry + 3; y++) for (let x = rx; x < rx + 3; x++) map[idx(x, y)] = 0; }
-
-  const d0 = bfs(idx(1, 1));
-  floors = []; for (let i = 0; i < MW * MH; i++) if (map[i] === 0 && d0[i] >= 0) floors.push(i);
-  const xy = i => [i % MW, (i / MW) | 0];
-  // lift door on the outer wall, as far from the start as possible
-  let best = -1, bestD = -1;
-  for (let i = 0; i < MW * MH; i++) {
-    const [x, y] = xy(i); if (!(x === 0 || y === 0 || x === MW - 1 || y === MH - 1)) continue;
-    const inner = x === 0 ? i + 1 : x === MW - 1 ? i - 1 : y === 0 ? i + MW : i - MW;
-    if ((x === 0 || x === MW - 1) && (y === 0 || y === MH - 1)) continue;
-    if (map[inner] === 0 && d0[inner] > bestD) { bestD = d0[inner]; best = i; }
-  }
-  map[best] = 2; const [dx, dy] = xy(best); door = { x: dx + .5, y: dy + .5 };
-  // fuses: far-flung dead ends first
-  const dead = floors.filter(i => [1, -1, MW, -MW].filter(o => map[i + o] !== 0).length >= 3);
-  const cands = shuffle(dead.filter(i => d0[i] > 5)).concat(shuffle(floors.filter(i => d0[i] > 5)));
-  fuses = [];
-  for (const minSep of [8, 6, 4, 2, 0]) {
-    for (const c of cands) {
-      if (fuses.length >= NFUSE) break;
-      const [cx, cy] = xy(c);
-      if (fuses.some(f => f.c === c || Math.abs(f.x - cx - .5) + Math.abs(f.y - cy - .5) < minSep)) continue;
-      fuses.push({ c, x: cx + .5, y: cy + .5, got: false, ph: R() * 6 });
-    }
-    if (fuses.length >= NFUSE) break;
-  }
-  bats = [];
-  for (const c of shuffle(floors.slice())) {
-    if (bats.length >= 5) break;
-    if (d0[c] < 4 || fuses.some(f => f.c === c) || bats.some(b => b.c === c)) continue;
-    const [cx, cy] = xy(c); bats.push({ c, x: cx + .5, y: cy + .5, got: false });
-  }
-  const far = floors.filter(i => d0[i] >= 14); const mc = far.length ? far[rand(far.length)] : floors[floors.length - 1];
-  const [mx, my] = xy(mc); M.x = mx + .5; M.y = my + .5;
-}
-
-/* ---------- state ---------- */
-let state = 'title', time = 0, scareT = 0, everLocked = false, danger = 0, heartT = 0, heartPulse = 0, ambT = 8, breathT = 0, msgT = 0, noteT = 0, flashI = 0;
-const P = { x: 1.5, y: 1.5, a: 0, stam: 1, exh: false, bat: 100, light: true, spr: false, mov: false, bob: 0, bobY: 0, step: 0 };
-const M = { x: 0, y: 0, st: 'wander', wx: 0, wy: 0, lx: 0, ly: 0, lost: 0, linger: 0, wake: 0, step: 0, growlT: 0, sway: 0 };
-const keys = {};
-const NOTES = [
-  ['Fuse 1 of 5 · torn from a duty log', 'Whoever finds this: the service lift runs off the old box by the stairwell. Five fuses. Sister Brandt pulled them when they sealed the east wing.'],
-  ['Fuse 2 of 5 · pencil on a chart', 'It does not see well in the dark. It sees the lamp. If you hear it breathing, put your light out and keep walking.'],
-  ['Fuse 3 of 5 · ward intake card', 'Room 14. Admitted 1961. Height on admission 5 ft 9. They measured him every Sunday. By spring the doorframes were too low.'],
-  ['Fuse 4 of 5 · back of a photograph', 'Don’t run unless you have to. The tile carries footsteps three halls over, and it always comes to see who is running.'],
-  ['Fuse 5 of 5 · scratched into the casing', 'That’s all of them. The lift is on the far side. It knows the power is back now. Go.']
-];
-
-function newGame() {
-  genMap();
-  Object.assign(P, { x: 1.5, y: 1.5, stam: 1, exh: false, bat: 100, light: true, bob: 0, bobY: 0, step: 0 });
-  P.a = map[idx(2, 1)] === 0 ? 0 : Math.PI / 2;
-  Object.assign(M, { st: 'wander', lost: 0, linger: 0, wake: 7, step: 0, growlT: 4 });
-  pickWander(); got = 0; powered = false; time = 0; danger = 0; ambT = 6 + R() * 6;
-  updateHUD(true);
-}
-
-/* ---------- audio ---------- */
-let AC = null, master, noiseBuf, brownBuf, canPan = false, droneGain;
-function initAudio() {
-  if (AC) { if (AC.state === 'suspended') AC.resume(); return; }
-  try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; return; }
-  master = AC.createGain(); master.gain.value = .9;
-  const comp = AC.createDynamicsCompressor(); master.connect(comp); comp.connect(AC.destination);
-  canPan = typeof AC.createStereoPanner === 'function';
-  const sr = AC.sampleRate; noiseBuf = AC.createBuffer(1, sr * 2, sr); brownBuf = AC.createBuffer(1, sr * 4, sr);
-  const a = noiseBuf.getChannelData(0), b = brownBuf.getChannelData(0); let l = 0;
-  for (let i = 0; i < a.length; i++) a[i] = R() * 2 - 1;
-  for (let i = 0; i < b.length; i++) { l = (l + .02 * (R() * 2 - 1)) / 1.02; b[i] = l * 3.5; }
-  droneGain = AC.createGain(); droneGain.gain.value = 0; droneGain.connect(master);
-  for (const [f, v, tp] of [[41.2, .05, 'sine'], [43.7, .045, 'sine'], [82.4, .012, 'triangle']]) {
-    const o = AC.createOscillator(); o.type = tp; o.frequency.value = f; const g = AC.createGain(); g.gain.value = v; o.connect(g); g.connect(droneGain); o.start();
-  }
-  const bn = AC.createBufferSource(); bn.buffer = brownBuf; bn.loop = true;
-  const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 350;
-  const bg = AC.createGain(); bg.gain.value = .35; bn.connect(lp); lp.connect(bg); bg.connect(droneGain); bn.start();
-  droneGain.gain.setTargetAtTime(1, AC.currentTime, 2);
-}
-function out(pan) { if (canPan && pan) { const p = AC.createStereoPanner(); p.pan.value = clamp(pan, -1, 1); p.connect(master); return p; } return master; }
-function env(g, t, a, peak, dur) { g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(Math.max(.0002, peak), t + a); g.gain.exponentialRampToValueAtTime(.0001, t + dur); }
-function noise({ dur = .1, f = 1000, q = 1, type = 'bandpass', vol = .2, pan = 0, at = 0, a = .005 }) {
-  if (!AC) return; const t = AC.currentTime + at;
-  const s = AC.createBufferSource(); s.buffer = noiseBuf; s.loop = true;
-  const fl = AC.createBiquadFilter(); fl.type = type; fl.frequency.value = f; fl.Q.value = q;
-  const g = AC.createGain(); env(g, t, a, vol, dur);
-  s.connect(fl); fl.connect(g); g.connect(out(pan)); s.start(t, R() * 1.5); s.stop(t + dur + .05);
-}
-function tone({ f = 440, f2 = 0, dur = .3, type = 'sine', vol = .2, pan = 0, at = 0, a = .01 }) {
-  if (!AC) return; const t = AC.currentTime + at;
-  const o = AC.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
-  const g = AC.createGain(); env(g, t, a, vol, dur); o.connect(g); g.connect(out(pan)); o.start(t); o.stop(t + dur + .05);
-}
-const SFX = {
-  step() { noise({ dur: .07, f: 700 + R() * 500, q: .8, vol: .1 }); noise({ dur: .09, f: 140, type: 'lowpass', vol: .16 }); },
-  heart(v) { tone({ f: 62, f2: 38, dur: .14, vol: v }); tone({ f: 58, f2: 36, dur: .16, vol: v * .7, at: .17 }); },
-  mstep(v, pan) { tone({ f: 52, f2: 28, dur: .28, vol: v, pan }); noise({ dur: .12, f: 260, type: 'lowpass', vol: v * .7, pan }); },
-  growl(v, pan) {
-    if (!AC) return; const t = AC.currentTime, o = out(pan);
-    const lp = AC.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420; lp.Q.value = 4;
-    const g = AC.createGain(); env(g, t, .25, v, 1.6); lp.connect(g); g.connect(o);
-    for (const f of [57, 61.5]) {
-      const s = AC.createOscillator(); s.type = 'sawtooth'; s.frequency.setValueAtTime(f, t); s.frequency.linearRampToValueAtTime(f * .72, t + 1.6);
-      const lfo = AC.createOscillator(); lfo.frequency.value = 7 + R() * 5; const lg = AC.createGain(); lg.gain.value = 6;
-      lfo.connect(lg); lg.connect(s.frequency); s.connect(lp); s.start(t); lfo.start(t); s.stop(t + 1.7); lfo.stop(t + 1.7);
-    }
-    noise({ dur: 1.4, f: 520, q: 1.5, vol: v * .5, pan, a: .3 });
-  },
-  click() { noise({ dur: .02, f: 2600, q: 2, vol: .16 }); },
-  pickup() { tone({ f: 311, dur: 1.3, type: 'triangle', vol: .1 }); tone({ f: 329.6, dur: 1.3, type: 'triangle', vol: .08, at: .06 }); tone({ f: 622, dur: .9, vol: .04, at: .1 }); },
-  battery() { tone({ f: 880, f2: 1320, dur: .12, type: 'square', vol: .04 }); noise({ dur: .05, f: 3000, vol: .08 }); },
-  power() { tone({ f: 40, f2: 62, dur: 2.4, type: 'sawtooth', vol: .07, a: .6 }); tone({ f: 120, dur: 2.2, type: 'sine', vol: .05, a: 1 }); },
-  ding() { tone({ f: 880, dur: 1.8, vol: .18 }); tone({ f: 659, dur: 2.2, vol: .14, at: .45 }); },
-  breath() { noise({ dur: .55, f: 900, q: .9, vol: .06, a: .18 }); },
-  scream() { tone({ f: 950, f2: 160, dur: 1.6, type: 'sawtooth', vol: .32 }); tone({ f: 1400, f2: 240, dur: 1.4, type: 'square', vol: .1 }); noise({ dur: 1.6, f: 1500, type: 'highpass', vol: .5, a: .01 }); tone({ f: 60, f2: 30, dur: 1, vol: .5 }); },
-  ambient() {
-    const pan = R() * 2 - 1, k = rand(5);
-    if (k === 0) for (let i = 0; i < 3; i++) noise({ dur: .14, f: 180, type: 'lowpass', vol: .28, pan, at: i * .34 });
-    else if (k === 1) { noise({ dur: 1.5, f: 2400, q: 7, vol: .05, pan, a: .5 }); noise({ dur: 1.2, f: 3100, q: 9, vol: .035, pan: -pan * .5, at: .4, a: .4 }); }
-    else if (k === 2) tone({ f: 214, f2: 158, dur: 1.8, type: 'triangle', vol: .03, pan, a: .3 });
-    else if (k === 3) { tone({ f: 1500, f2: 500, dur: .08, vol: .05, pan }); tone({ f: 1400, f2: 480, dur: .08, vol: .04, pan, at: .9 }); }
-    else { tone({ f: 300, f2: 290, dur: 2.5, type: 'sine', vol: .025, pan, a: 1 }); tone({ f: 317, f2: 305, dur: 2.5, type: 'sine', vol: .02, pan, a: 1 }); }
-  }
-};
-function panTo(x, y) { const rx = x - P.x, ry = y - P.y, d = Math.hypot(rx, ry) || 1; return (-Math.sin(P.a) * rx + Math.cos(P.a) * ry) / d; }
-
-/* ---------- HUD ---------- */
-const fuseIcons = $('fuseIcons');
-for (let i = 0; i < NFUSE; i++) fuseIcons.appendChild(document.createElement('b'));
-let lastHud = '';
-function updateHUD(force) {
-  const key = got + '|' + Math.round(P.bat) + '|' + Math.round(P.stam * 50);
-  if (!force && key === lastHud) return; lastHud = key;
-  [...fuseIcons.children].forEach((b, i) => b.classList.toggle('on', i < got));
-  const bb = $('batBar'); bb.style.width = P.bat + '%'; bb.classList.toggle('low', P.bat < 20);
-  $('stamBar').style.width = (P.stam * 100) + '%';
-}
-function say(t, dur = 3.5) { const m = $('msg'); m.textContent = t; m.style.opacity = 1; msgT = dur; }
-function showNote(tag, text) { const n = $('note'); n.innerHTML = ''; const s = document.createElement('span'); s.className = 'tag'; s.textContent = tag; n.append(s, text); n.style.opacity = 1; noteT = 7; }
-const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
-
-/* ---------- monster ---------- */
-function los(x0, y0, x1, y1) { const dx = x1 - x0, dy = y1 - y0, n = Math.ceil(Math.hypot(dx, dy) / .1); for (let i = 1; i < n; i++) { const t = i / n; if (map[idx((x0 + dx * t) | 0, (y0 + dy * t) | 0)]) return false; } return true; }
-function pickWander() {
-  const pc = idx(P.x | 0, P.y | 0);
-  let pool = floors;
-  if (R() < .55) { const px0 = P.x | 0, py0 = P.y | 0; const near = floors.filter(i => { const x = i % MW, y = (i / MW) | 0, d = Math.max(Math.abs(x - px0), Math.abs(y - py0)); return d <= 6 && d >= 2; }); if (near.length) pool = near; }
-  let c = pool[rand(pool.length)]; if (c === pc) c = floors[rand(floors.length)];
-  M.wx = c % MW + .5; M.wy = ((c / MW) | 0) + .5;
-}
-function moveToward(tx, ty, step) {
-  const mc = idx(M.x | 0, M.y | 0), tc = idx(tx | 0, ty | 0);
-  let gx = tx, gy = ty;
-  if (mc !== tc && map[tc] === 0) {
-    const f = bfs(tc); let bn = -1, bd = f[mc] < 0 ? 1e9 : f[mc];
-    for (const o of [1, -1, MW, -MW]) { const n = mc + o; if (f[n] >= 0 && f[n] < bd) { bd = f[n]; bn = n; } }
-    if (bn >= 0) { gx = bn % MW + .5; gy = ((bn / MW) | 0) + .5; }
-  }
-  const dx = gx - M.x, dy = gy - M.y, d = Math.hypot(dx, dy);
-  if (d < 1e-4) return 0;
-  const s = Math.min(step, d); M.x += dx / d * s; M.y += dy / d * s; return s;
-}
-function updateMonster(dt) {
-  if (time < M.wake) return;
-  const dx = P.x - M.x, dy = P.y - M.y, d = Math.hypot(dx, dy);
-  const sight = d < 16 && los(M.x, M.y, P.x, P.y);
-  const seeR = flashI > .3 ? 11 : 3.2;
-  const heard = (P.spr && P.mov && d < 9) || (P.mov && d < 2.4);
-  if ((sight && d < seeR) || d < 1.5) {
-    if (M.st !== 'hunt') { M.st = 'hunt'; SFX.growl(clamp(.5 - d * .02, .15, .5), panTo(M.x, M.y)); M.growlT = 3 + R() * 2; }
-    M.lost = 0; M.lx = P.x; M.ly = P.y;
-  } else if (heard && M.st !== 'hunt') { M.st = 'search'; M.lx = P.x; M.ly = P.y; M.linger = 0; }
-  else if (M.st === 'hunt') {
-    M.lost += dt; if (M.lost < 1.6) { M.lx = P.x; M.ly = P.y; }
-    if (M.lost > 4.5) { M.st = 'search'; M.linger = 0; }
-  }
-  let tx, ty, sp;
-  if (M.st === 'hunt') { tx = M.lx; ty = M.ly; sp = 2.3 + got * .17; }
-  else if (M.st === 'search') { tx = M.lx; ty = M.ly; sp = 1.75 + got * .1; }
-  else { tx = M.wx; ty = M.wy; sp = 1.0 + got * .1; }
-  const moved = moveToward(tx, ty, sp * dt);
-  const arrived = Math.hypot(tx - M.x, ty - M.y) < .3;
-  if (M.st === 'search' && arrived) { M.linger += dt; if (M.linger > 2.5) { M.st = 'wander'; pickWander(); } }
-  if (M.st === 'wander' && arrived) pickWander();
-  if (M.st === 'hunt' && arrived && M.lost > 1.6) { M.st = 'search'; M.linger = 0; }
-  M.step += moved; M.sway += moved * 3;
-  if (M.step > .95) { M.step = 0; if (d < 13) SFX.mstep(Math.pow(1 - d / 13, 2) * .55 + .02, panTo(M.x, M.y)); }
-  if (M.st === 'hunt') { M.growlT -= dt; if (M.growlT <= 0) { M.growlT = 3 + R() * 3; SFX.growl(clamp(.45 - d * .025, .08, .45), panTo(M.x, M.y)); } }
-  if (d < .55) caught();
-}
-
-/* ---------- player ---------- */
-function solid(x, y) { return map[idx(x | 0, y | 0)] !== 0; }
-function tryMove(nx, ny) {
-  const r = .22;
-  if (!solid(nx + r, P.y + r) && !solid(nx - r, P.y + r) && !solid(nx + r, P.y - r) && !solid(nx - r, P.y - r)) P.x = nx;
-  if (!solid(P.x + r, ny + r) && !solid(P.x - r, ny + r) && !solid(P.x + r, ny - r) && !solid(P.x - r, ny - r)) P.y = ny;
-}
-const touch = { mx: 0, my: 0, moveId: null, lookId: null, ox: 0, oy: 0, lx: 0, run: false, edge: false };
-function update(dt) {
-  let f = 0, s = 0;
-  if (keys.KeyW || keys.ArrowUp) f += 1; if (keys.KeyS || keys.ArrowDown) f -= 1;
-  if (keys.KeyD) s += 1; if (keys.KeyA) s -= 1;
-  if (keys.ArrowLeft) P.a -= 2.4 * dt; if (keys.ArrowRight) P.a += 2.4 * dt;
-  f += -touch.my; s += touch.mx;
-  const len = Math.hypot(f, s); if (len > 1) { f /= len; s /= len; }
-  P.mov = len > .1;
-  const wantRun = keys.ShiftLeft || keys.ShiftRight || touch.run || touch.edge;
-  if (touch.run && P.exh) setRun(false);
-  P.spr = wantRun && P.mov && !P.exh && P.stam > 0;
-  const sp = (P.spr ? 3.6 : 2.1) * dt;
-  const cx = Math.cos(P.a), cy = Math.sin(P.a);
-  const ox = P.x, oy = P.y;
-  tryMove(P.x + (cx * f - cy * s) * sp, P.y + (cy * f + cx * s) * sp);
-  const moved = Math.hypot(P.x - ox, P.y - oy);
-  if (P.spr) { P.stam -= dt * .3; if (P.stam <= 0) { P.stam = 0; P.exh = true; } }
-  else { P.stam = Math.min(1, P.stam + dt * (P.mov ? .12 : .2)); if (P.exh && P.stam > .4) P.exh = false; }
-  if (P.exh) { breathT -= dt; if (breathT <= 0) { breathT = .8; SFX.breath(); } }
-  P.step += moved; P.bob += moved * (P.spr ? 5.2 : 6.5);
-  P.bobY = Math.sin(P.bob) * (P.spr ? 2.2 : 1.2);
-  if (P.step > (P.spr ? .8 : .62)) { P.step = 0; SFX.step(); }
-
-  if (P.light && P.bat > 0) { P.bat = Math.max(0, P.bat - dt * 1.05); if (P.bat === 0) { P.light = false; SFX.click(); say('The lamp sputters out.'); } }
-  const on = P.light && P.bat > 0;
-  flashI = on ? (P.bat < 20 && R() < .12 * (1 - P.bat / 20) + .02 ? .15 + R() * .3 : .95 + R() * .05) : 0;
-
-  for (const fu of fuses) if (!fu.got && Math.hypot(fu.x - P.x, fu.y - P.y) < .6) {
-    fu.got = true; got++; SFX.pickup(); showNote(...NOTES[got - 1]);
-    if (got === NFUSE) {
-      powered = true; SFX.power(); setTimeout(() => state === 'play' && say('Somewhere in the dark, the lift hums awake.', 4), 1200);
-      M.st = 'search'; M.lx = P.x; M.ly = P.y; M.linger = 0; M.wake = Math.min(M.wake, time);
-    }
-  }
-  for (const b of bats) if (!b.got && Math.hypot(b.x - P.x, b.y - P.y) < .6) { b.got = true; P.bat = Math.min(100, P.bat + 45); SFX.battery(); say('A spare battery. The lamp steadies.'); }
-  if (Math.hypot(door.x - P.x, door.y - P.y) < 1.25) {
-    if (powered) { win(); return; }
-    if (msgT <= 0) say(`The lift is dead. Fuses restored: ${got} of ${NFUSE}.`, 2.5);
-  }
-
-  updateMonster(dt);
-
-  const md = Math.hypot(M.x - P.x, M.y - P.y);
-  const target = time < M.wake ? 0 : M.st === 'hunt' ? clamp(1 - md / 11, .3, 1) : clamp(1 - md / 7, 0, 1) * .6;
-  danger += (target - danger) * Math.min(1, dt * 2);
-  heartT -= dt; heartPulse = Math.max(0, heartPulse - dt * 3);
-  if (heartT <= 0 && danger > .05) { heartT = 1.15 - danger * .78; heartPulse = 1; SFX.heart(.12 + danger * .55); }
-  ambT -= dt; if (ambT <= 0) { ambT = 11 + R() * 16; SFX.ambient(); }
-  if (msgT > 0) { msgT -= dt; if (msgT <= 0) $('msg').style.opacity = 0; }
-  if (noteT > 0) { noteT -= dt; if (noteT <= 0) $('note').style.opacity = 0; }
-  updateHUD();
-}
-
-/* ---------- renderer ---------- */
-let LR = 0, LG = 0, LB = 0;
-function light(i, d) {
-  const a = .045 / (1 + .05 * d * d) + .1 / (1 + .7 * d * d);
-  const f = flashI * cone[i] * 2.3 / (1 + .085 * d * d);
-  LR = a * .72 + f * 1.05; LG = a * .8 + f * .95; LB = a + f * .78;
-}
-function render() {
-  const dirX = Math.cos(P.a), dirY = Math.sin(P.a), pl = W / (2 * F), plX = -dirY * pl, plY = dirX * pl, half = H / 2;
-  const fl = TEX.floor.d, ce = TEX.ceil.d;
-  const r0x = dirX - plX, r0y = dirY - plY;
-  for (let y = (half | 0); y < H; y++) {
-    const p = y - half + .5, rd = F * .5 / p;
-    const stX = rd * 2 * plX / W, stY = rd * 2 * plY / W;
-    let fx = P.x + rd * r0x, fy = P.y + rd * r0y;
-    const yc = H - 1 - y;
-    for (let x = 0; x < W; x++) {
-      const tx = ((fx - Math.floor(fx)) * T) & TM, ty = ((fy - Math.floor(fy)) * T) & TM, ti = (ty * T + tx) * 4;
-      fx += stX; fy += stY;
-      let i = y * W + x, o = i * 4; light(i, rd);
-      px[o] = fl[ti] * LR; px[o + 1] = fl[ti + 1] * LG; px[o + 2] = fl[ti + 2] * LB;
-      i = yc * W + x; o = i * 4; light(i, rd);
-      px[o] = ce[ti] * LR * .9; px[o + 1] = ce[ti + 1] * LG * .9; px[o + 2] = ce[ti + 2] * LB * .9;
-    }
-  }
-  for (let x = 0; x < W; x++) {
-    const camX = 2 * x / W - 1, rdx = dirX + plX * camX, rdy = dirY + plY * camX;
-    let mx = P.x | 0, my = P.y | 0;
-    const ddx = Math.abs(1 / rdx), ddy = Math.abs(1 / rdy);
-    let sx, sy, sdx, sdy, side = 0, cell = 0;
-    if (rdx < 0) { sx = -1; sdx = (P.x - mx) * ddx; } else { sx = 1; sdx = (mx + 1 - P.x) * ddx; }
-    if (rdy < 0) { sy = -1; sdy = (P.y - my) * ddy; } else { sy = 1; sdy = (my + 1 - P.y) * ddy; }
-    for (let n = 0; n < 64; n++) {
-      if (sdx < sdy) { sdx += ddx; mx += sx; side = 0; } else { sdy += ddy; my += sy; side = 1; }
-      cell = map[idx(mx, my)]; if (cell) break;
-    }
-    const perp = Math.max(.05, side === 0 ? sdx - ddx : sdy - ddy);
-    zbuf[x] = perp;
-    let wx = side === 0 ? P.y + perp * rdy : P.x + perp * rdx; wx -= Math.floor(wx);
-    let tX = (wx * T) | 0; if (side === 0 && rdx > 0) tX = TM - tX; if (side === 1 && rdy < 0) tX = TM - tX;
-    const k = (mx * 7 + my * 13) % 23;
-    const tx = cell === 2 ? (powered ? TEX.doorOn : TEX.doorOff) : k === 3 ? TEX.tally : k === 11 ? TEX.words : TEX.wall;
-    const td = tx.d, te = tx.e, sh = side ? .74 : 1;
-    const lh = F / perp, ds = half - lh / 2, y0 = Math.max(0, Math.ceil(ds)), y1 = Math.min(H, ds + lh);
-    for (let y = y0; y < y1; y++) {
-      const tY = (((y - ds) / lh) * T) & TM, t = tY * T + tX, ti = t * 4, i = y * W + x, o = i * 4;
-      if (te[t]) { px[o] = td[ti]; px[o + 1] = td[ti + 1]; px[o + 2] = td[ti + 2]; continue; }
-      light(i, perp);
-      px[o] = td[ti] * LR * sh; px[o + 1] = td[ti + 1] * LG * sh; px[o + 2] = td[ti + 2] * LB * sh;
-    }
-  }
-  // sprites
-  const inv = 1 / (plX * dirY - dirX * plY), list = [];
-  const add = (x, y, t, scale, emis, lift, wob) => {
-    const rx = x - P.x, ry = y - P.y, ty = inv * (-plY * rx + plX * ry);
-    if (ty > .12) list.push({ tx: inv * (dirY * rx - dirX * ry), ty, t, scale, emis, lift, wob });
-  };
-  for (const f of fuses) if (!f.got) add(f.x, f.y, TEX.fuse, .34, .75 + .25 * Math.sin(time * 3 + f.ph), .02 + Math.sin(time * 2 + f.ph) * .02, 0);
-  for (const b of bats) if (!b.got) add(b.x, b.y, TEX.bat, .3, .6 + .4 * (Math.sin(time * 5) > 0), 0, 0);
-  add(M.x, M.y, TEX.mon, 1.12, 1, 0, Math.sin(M.sway) * .03);
-  list.sort((a, b) => b.ty - a.ty);
-  for (const s of list) {
-    const ty = s.ty, scr = (W / 2) * (1 + s.tx / ty) + s.wob * F / ty;
-    const sz = F * s.scale / ty, floorY = half + F * .5 / ty - F * s.lift / ty, top = floorY - sz, left = scr - sz / 2;
-    const x0 = Math.max(0, Math.ceil(left)), x1 = Math.min(W, left + sz), y0 = Math.max(0, Math.ceil(top)), y1 = Math.min(H, floorY);
-    const td = s.t.d, te = s.t.e;
-    for (let x = x0; x < x1; x++) {
-      if (ty >= zbuf[x]) continue;
-      const tX = ((x - left) * T / sz) | 0;
-      for (let y = y0; y < y1; y++) {
-        const t = (((y - top) * T / sz) | 0) * T + tX, ti = t * 4; if (td[ti + 3] < 128) continue;
-        const i = y * W + x, o = i * 4;
-        if (te[t]) { px[o] = td[ti] * s.emis; px[o + 1] = td[ti + 1] * s.emis; px[o + 2] = td[ti + 2] * s.emis; continue; }
-        light(i, ty);
-        px[o] = td[ti] * LR; px[o + 1] = td[ti + 1] * LG; px[o + 2] = td[ti + 2] * LB;
-      }
-    }
-  }
-  // post: vignette, dread tint, film grain
-  const g = 14 + danger * 34 + (flashI < .2 ? 8 : 0), off = rand(65536), squeeze = 1 - heartPulse * danger * .3;
-  const tr = 1 + danger * .3, tg = 1 - danger * .18, tb = 1 - danger * .22;
-  for (let i = 0, n = W * H; i < n; i++) {
-    const o = i * 4, v = Math.pow(vig[i], 1 + (1 - squeeze) * 3), nz = NOISE[(i + off) & 65535] * g;
-    px[o] = px[o] * v * tr + nz; px[o + 1] = px[o + 1] * v * tg + nz; px[o + 2] = px[o + 2] * v * tb + nz;
-  }
-}
-function present() {
-  lctx.putImageData(img, 0, 0);
-  const cw = cvs.width, ch = cvs.height, s = Math.max(cw / W, ch / H) * 1.03, dw = W * s, dh = H * s;
-  ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = '#050506'; ctx.fillRect(0, 0, cw, ch);
-  ctx.drawImage(low, (cw - dw) / 2, (ch - dh) / 2 + P.bobY * s, dw, dh);
-}
-function drawScare(k) {
-  const cw = cvs.width, ch = cvs.height;
-  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cw, ch);
-  if (k > .82 && R() < .5) return;
-  const s = Math.min(cw, ch) * (.95 + k * .7);
-  ctx.save(); ctx.translate(cw / 2 + (R() - .5) * 50, ch / 2 + (R() - .5) * 50 + s * .08); ctx.scale(s / 100, s / 100);
-  const gr = ctx.createRadialGradient(0, -8, 4, 0, 0, 52); gr.addColorStop(0, '#d8cfbf'); gr.addColorStop(.7, '#8d857a'); gr.addColorStop(1, '#2a2622');
-  ctx.fillStyle = gr; ctx.beginPath(); ctx.ellipse(0, 0, 30, 50, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = '#000'; ctx.beginPath(); ctx.ellipse(-12, -12, 8, 11, -.15, 0, 7); ctx.ellipse(12, -12, 8, 11, .15, 0, 7); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(0, 24, 8 + k * 3, 13 + k * 10, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(-12 + (R() - .5), -11, 1.4, 0, 7); ctx.arc(12 + (R() - .5), -11, 1.4, 0, 7); ctx.fill();
-  ctx.restore();
-  ctx.fillStyle = `rgba(130,0,0,${.22 + R() * .25})`; ctx.fillRect(0, 0, cw, ch);
-  for (let i = 0; i < 30; i++) { ctx.fillStyle = `rgba(255,255,255,${R() * .12})`; ctx.fillRect(0, R() * ch, cw, 1 + R() * 3); }
-}
-
-/* ---------- flow ---------- */
-function setHidden(id, h) { $(id).hidden = h; }
-const fsEl = document.documentElement;
-const canFS = !!(fsEl.requestFullscreen || fsEl.webkitRequestFullscreen);
-const isFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
-function enterFS() {
-  try {
-    const p = (fsEl.requestFullscreen || fsEl.webkitRequestFullscreen).call(fsEl, { navigationUI: 'hide' });
-    const after = () => { try { const o = screen.orientation; if (COARSE && o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) {} };
-    if (p && p.then) p.then(after).catch(() => {}); else after();
-  } catch (e) {}
-}
-function exitFS() { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
-function toggleFS() { if (isFS()) exitFS(); else enterFS(); }
-function playUI(on) { setHidden('hud', !on); setHidden('touchUI', !on || !COARSE); setHidden('topBtns', !on); if (!on) { setHidden('stick', true); setRun(false); } else $('tLight').classList.toggle('held', P.light && P.bat > 0); }
-function lock() { if (COARSE) return; try { const p = cvs.requestPointerLock && cvs.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
-function unlock() { try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {} }
-function start() {
-  initAudio(); newGame(); state = 'play';
-  if (COARSE && canFS && !isFS()) enterFS();
-  touch.moveId = touch.lookId = null; touch.mx = touch.my = 0; touch.edge = false;
-  ['title', 'pause', 'end'].forEach(id => setHidden(id, true)); playUI(true);
-  say('Find the five fuses. Then find the lift.', 4.5); lock();
-}
-function pause() { if (state !== 'play') return; state = 'pause'; setHidden('pause', false); playUI(false); unlock(); }
-function resume() { if (state !== 'pause') return; initAudio(); state = 'play'; setHidden('pause', true); playUI(true); lock(); }
-function caught() { state = 'scare'; scareT = 0; SFX.scream(); playUI(false); $('note').style.opacity = 0; $('msg').style.opacity = 0; unlock(); }
-function best(t) { try { const b = parseFloat(localStorage.getItem('ashgrove-best')); if (!b || t < b) { localStorage.setItem('ashgrove-best', String(t)); return t; } return b; } catch (e) { return null; } }
-function endGame(won) {
-  state = 'end'; const tt = $('endTitle');
-  tt.className = won ? '' : 'dead';
-  if (won) { const b = best(time); tt.textContent = 'The lift doors close.'; $('endText').textContent = `You escaped the east wing in ${fmt(time)}.` + (b ? ` Best escape: ${fmt(b)}.` : ''); $('again').textContent = 'Play again'; }
-  else { tt.textContent = 'It found you.'; $('endText').textContent = `Fuses restored: ${got} of ${NFUSE}. You lasted ${fmt(time)} in the dark.`; $('again').textContent = 'Go back in'; }
-  setHidden('end', false); playUI(false); $('note').style.opacity = 0; $('msg').style.opacity = 0; unlock();
-}
-function win() { SFX.ding(); endGame(true); }
-
-let last = 0;
-function frame(ts) {
-  requestAnimationFrame(frame);
-  const dt = Math.min(.05, (ts - last) / 1000 || 0); last = ts;
-  if (state === 'play') { time += dt; update(dt); if (state === 'play') { render(); present(); } }
-  else if (state === 'scare') { scareT += dt; drawScare(scareT / 1.4); if (scareT > 1.4) endGame(false); }
-  else if (state === 'title') { time += dt; P.a += dt * .12; flashI = .85 + R() * .05; danger = 0; render(); present(); }
-}
-
-/* ---------- input ---------- */
-addEventListener('keydown', e => {
-  keys[e.code] = true;
-  if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) e.preventDefault();
-  if (state === 'play') {
-    if (e.code === 'KeyF') toggleLight();
-    if (e.code === 'Escape' || e.code === 'KeyP') pause();
-  } else if (state === 'pause' && (e.code === 'KeyP' || e.code === 'Enter')) resume();
-});
-addEventListener('keyup', e => { keys[e.code] = false; });
-addEventListener('blur', () => { for (const k in keys) keys[k] = false; pause(); });
-function toggleLight() { if (P.bat <= 0) { SFX.click(); say('The lamp is dead. Find a battery.', 2.5); return; } P.light = !P.light; SFX.click(); }
-let drag = null;
-cvs.addEventListener('mousedown', e => {
-  if (state !== 'play') return;
-  if (e.button === 2) { toggleLight(); return; }
-  if (!document.pointerLockElement) { lock(); drag = e.clientX; }
-});
-addEventListener('mouseup', () => { drag = null; });
-addEventListener('mousemove', e => {
-  if (state !== 'play') return;
-  if (document.pointerLockElement === cvs) P.a += e.movementX * .0024;
-  else if (drag !== null) { P.a += (e.clientX - drag) * .006; drag = e.clientX; }
-});
-cvs.addEventListener('contextmenu', e => e.preventDefault());
-document.addEventListener('pointerlockchange', () => {
-  if (document.pointerLockElement === cvs) everLocked = true;
-  else if (everLocked && state === 'play') pause();
-});
-cvs.addEventListener('touchstart', e => {
-  if (state !== 'play') return; e.preventDefault();
-  for (const t of e.changedTouches) {
-    if (t.clientX < innerWidth / 2 && touch.moveId === null) {
-      touch.moveId = t.identifier; touch.ox = t.clientX; touch.oy = t.clientY;
-      const st = $('stick'); st.style.left = t.clientX + 'px'; st.style.top = t.clientY + 'px'; st.hidden = false; moveKnob(0, 0);
-    }
-    else if (touch.lookId === null) { touch.lookId = t.identifier; touch.lx = t.clientX; }
-  }
-}, { passive: false });
-cvs.addEventListener('touchmove', e => {
-  e.preventDefault();
-  for (const t of e.changedTouches) {
-    if (t.identifier === touch.moveId) {
-      let dx = t.clientX - touch.ox, dy = t.clientY - touch.oy; const r = Math.hypot(dx, dy);
-      touch.edge = r > 80;
-      if (r > 50) { dx *= 50 / r; dy *= 50 / r; }
-      touch.mx = dx / 50; touch.my = dy / 50; moveKnob(dx, dy);
-    }
-    else if (t.identifier === touch.lookId) { P.a += (t.clientX - touch.lx) * .0075; touch.lx = t.clientX; }
-  }
-}, { passive: false });
-function moveKnob(dx, dy) { $('knob').style.transform = `translate(${dx}px, ${dy}px)`; $('stick').classList.toggle('run', touch.edge); }
-const endTouch = e => { for (const t of e.changedTouches) { if (t.identifier === touch.moveId) { touch.moveId = null; touch.mx = touch.my = 0; touch.edge = false; $('stick').hidden = true; } if (t.identifier === touch.lookId) touch.lookId = null; } };
-cvs.addEventListener('touchend', endTouch); cvs.addEventListener('touchcancel', endTouch);
-const tap = (id, fn) => $(id).addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); fn(); });
-function setRun(on) { touch.run = on; $('tRun').classList.toggle('held', on); }
-tap('tLight', () => { toggleLight(); $('tLight').classList.toggle('held', P.light && P.bat > 0); });
-tap('tRun', () => setRun(!touch.run));
-tap('bPause', pause);
-tap('bFull', toggleFS);
-if (!canFS) $('bFull').hidden = true;
-$('restart').addEventListener('click', start);
-// installable app (only where the service worker is available, e.g. GitHub Pages)
-let installEvt = null;
-addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('install').hidden = false; });
-addEventListener('appinstalled', () => { $('install').hidden = true; installEvt = null; });
-$('install').addEventListener('click', async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; $('install').hidden = true; });
-const standalone = matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || navigator.standalone === true;
-const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-if ('serviceWorker' in navigator && window.isSecureContext && window.top === window) {
-  navigator.serviceWorker.register('sw.js').then(() => { if (iOS && !standalone) $('iosHint').hidden = false; }).catch(() => {});
-}
-$('start').addEventListener('click', start);
-$('again').addEventListener('click', start);
-$('resume').addEventListener('click', resume);
-if (COARSE) {
-  $('controlsList').innerHTML = '<dt>Left thumb</dt><dd>Drag to walk, push far to run</dd><dt>Right thumb</dt><dd>Drag to look around</dd><dt>Run / Lamp</dt><dd>Round buttons, bottom right</dd><dt>Top right</dt><dd>Fullscreen and pause</dd>';
-  $('hint').textContent = 'Turn your phone sideways. Headphones recommended.';
-}
-
-addEventListener('resize', resize);
-resize(); buildTextures(); newGame(); M.wake = 1e9;
-requestAnimationFrame(frame);
-})();
-</script>
+<script src="game.js"></script>
 </body>
 </html>

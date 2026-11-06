@@ -1,44 +1,57 @@
 # Lights Out at Ashgrove
 
-A short first-person horror game that runs in the browser. It is a single file (`index.html`) with no dependencies. The textures, the monster and all of the sound are generated in code.
+A first-person horror game that runs in the browser, alone or with one friend online. Textures, monsters and all sound are generated in code. There is no build step.
 
-The power has failed in the east wing of Ashgrove Sanatorium. Find the five fuses, restore power to the service lift, and get out. Something tall walks the halls. It notices your lamp and it hears you run.
+Ashgrove Sanatorium closed in 1974. Each floor has a different monster with its own rules. Find what opens the way out, and don't let it reach you.
 
-## Play
+## Stages
 
-Open `index.html` in a browser. To serve it locally instead:
+| # | Stage | Monster | How it hunts | Objective |
+| --- | --- | --- | --- | --- |
+| 1 | The East Wing | The Night Patient | Sees your lamp from far away, hears you run | 5 fuses, then the service lift |
+| 2 | Cold Storage | The Mannequin | Only moves when nobody is looking at it. The power cuts out without warning | 4 drawer keys, then the steel door |
+| 3 | The Boiler Room | The Drowned | Blind. Hunts by sound: splashing, running and turning valves are loud | Turn 3 valves, then the drain hatch |
+| 4 | The Chapel | The Hollow | Closes in fastest in the dark. Stops while a lamp beam is on it, which drains the battery fast. Won't cross a lit candle | Light 4 candles, then the chapel doors |
 
-```sh
-python3 -m http.server
-# then visit http://localhost:8000
-```
+Each stage is a new random maze every time. Clearing a stage unlocks it on the title screen.
+
+## Weapons
+
+You start each stage with at least one of each, and you can find more (up to 3 each). In co-op the kit is shared.
+
+- **Camera flash** stuns the monster you point it at. It tears the Hollow apart for a while, and pins the Mannequin in place. The Drowned is blind, so the click only tells it where you are.
+- **Flare** burns for 10 seconds. Lit next to a monster, it sends the monster away for 15 seconds. While it burns, monsters won't come near it. The Drowned is drawn to it instead, and sinks when it gets there.
+
+## Co-op (2 players, online)
+
+1. One player taps **Host co-op** and gets a 4-character room code.
+2. The other taps **Join co-op** and types the code.
+3. The host presses **Start**.
+
+When the monster catches someone in co-op, that player goes down instead of dying. The partner revives them by standing over them for 3 seconds. If both players are down, the stage restarts. The exit only opens when both players are standing at it.
+
+Online play uses [PeerJS](https://peerjs.com/) (`vendor/peerjs.min.js`, MIT license). The free PeerJS server matches the two players, then the game connects them directly (peer to peer). Some strict mobile or office networks block direct connections. If joining keeps failing, try Wi-Fi on both devices. Online play only works on the website or the installed app, not inside the Claude preview.
 
 ## Controls
 
-| Input | Action |
-| --- | --- |
-| W A S D | Walk |
-| Mouse, or ← → | Look around |
-| Shift | Run (uses breath, and it can hear you) |
-| F, or right-click | Lamp on or off |
-| Esc / P | Pause |
+| Keyboard / mouse | Touch | Action |
+| --- | --- | --- |
+| W A S D | Left thumb | Walk (hold C, or push the stick only a little, to sneak) |
+| Mouse, or ← → | Right thumb | Look around |
+| Shift | Far push on the stick, or Run | Run |
+| F, or right-click | Lamp | Lamp on or off |
+| Q, or left-click | Flash | Camera flash |
+| E | Flare | Light a flare |
+| Esc / P | Pause button | Pause (in co-op the game keeps running) |
 
-On phones and tablets, drag with your left thumb to walk (push the stick far to run) and your right thumb to look. Run and Lamp are the round buttons at the bottom right. Fullscreen and pause are at the top right. Starting a game on a phone switches to fullscreen landscape where the browser allows it.
+## Play and install
 
-## Install as an app
+- Open `index.html` through a web server (`python3 -m http.server`, then visit http://localhost:8000).
+- To install it as an app: turn on GitHub Pages for this repo (**Settings → Pages → Deploy from a branch**, pick the branch, folder `/ (root)`), open `https://raybbb101.github.io/Horr/` in Chrome, and tap **Install app** or Chrome's **Add to Home screen**. On iPhone use Safari's **Share → Add to Home Screen**.
 
-The game is a Progressive Web App: it can be installed and played offline.
+## Files
 
-1. Turn on GitHub Pages for this repo: **Settings → Pages → Build and deployment → Deploy from a branch**, pick the branch, folder `/ (root)`, and save.
-2. Open `https://raybbb101.github.io/Horr/` in Chrome.
-3. Tap **Install app** on the title screen, or use Chrome's menu → **Add to Home screen / Install app**.
-
-On iPhone, open the page in Safari and use **Share → Add to Home Screen**.
-
-## How it works
-
-- **Map**: every run generates a new maze. It adds loops and a few small rooms, puts the fuses in far-apart dead ends, and puts the lift on the outer wall farthest from where you start.
-- **The monster**: it wanders toward your part of the ward. It starts hunting when it sees you (from about 11 tiles away with the lamp on, about 3 with it off) or hears you running. It follows you with grid pathfinding and gets faster with every fuse you pick up.
-- **Lamp**: the battery drains while the lamp is on and flickers when it gets low. Spare batteries are scattered around.
-- **Rendering**: a raycaster draws textured walls, floor and ceiling into a low-resolution buffer. The flashlight cone, distance falloff, vignette, film grain and red dread tint are all applied per pixel.
-- **Audio**: Web Audio makes the ambient drone, footsteps, a heartbeat that speeds up as the monster gets close, growls panned toward the monster, background noises, and the jumpscare scream.
+- `index.html`: screens and styling
+- `game.js`: the game (raycaster, stages, monsters, weapons, audio, co-op netcode)
+- `sw.js`, `manifest.webmanifest`, `icons/`: installable app and offline support
+- `vendor/peerjs.min.js`: PeerJS 1.5.4 for online play
