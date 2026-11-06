@@ -1,6 +1,6 @@
 # Lights Out at Ashgrove
 
-A first-person horror game that runs in the browser, alone or with one friend online. Textures, monsters and all sound are generated in code. There is no build step.
+A first-person horror game that runs in the browser, alone or with up to three friends online (4 players). Textures, monsters and all sound are generated in code. There is no build step.
 
 Ashgrove Sanatorium closed in 1974. Each floor has a different monster with its own rules. Find what opens the way out, and don't let it reach you.
 
@@ -20,20 +20,20 @@ The map in the top right starts blank and fills in as you see the halls (farther
 
 ## Weapons
 
-You start each stage with at least one of each, and you can find more (up to 3 each). In co-op the kit is shared.
+You start each stage with at least one of each, and you can find more (up to 3 each). In co-op the whole team shares one kit.
 
 - **Camera flash** stuns the monster you point it at. It tears the Hollow apart for a while, and pins the Mannequin in place. The Drowned is blind, so the click only tells it where you are.
 - **Flare** burns for 10 seconds. Lit next to a monster, it sends the monster away for 15 seconds. While it burns, monsters won't come near it. The Drowned is drawn to it instead, and sinks when it gets there.
 
-## Co-op (2 players, online)
+## Co-op (up to 4 players, online)
 
 1. One player taps **Host co-op** and gets a 4-character room code.
-2. The other taps **Join co-op** and types the code.
-3. The host presses **Start**.
+2. Up to three others tap **Join co-op** and type the code. The room shows how many players are in (for example 3 of 4). A fifth player is turned away, and nobody can join once the game has started.
+3. The host presses **Start** when everyone is in.
 
-When the monster catches someone in co-op, that player goes down instead of dying. The partner revives them by standing over them for 3 seconds. If both players are down, the stage restarts. The exit only opens when both players are standing at it.
+Each player has a different coat colour. When the monster catches someone in co-op, that player goes down instead of dying, and any teammate can revive them by standing over them for 3 seconds. Downed teammates show on everyone's map. If everyone is down, the stage restarts. The exit only opens when every player still in the game is standing at it. If someone disconnects, the rest keep playing.
 
-Online play uses [PeerJS](https://peerjs.com/) (`vendor/peerjs.min.js`, MIT license). The free PeerJS server matches the two players, then the game connects them directly (peer to peer). Some strict mobile or office networks block direct connections. If joining keeps failing, try Wi-Fi on both devices. Online play only works on the website or the installed app, not inside the Claude preview.
+Online play uses [PeerJS](https://peerjs.com/) (`vendor/peerjs.min.js`, MIT license). The free PeerJS server matches the players, then each guest connects directly to the host's game (peer to peer). The host's device runs the monster and the world, so the player with the best connection should host. Some strict mobile or office networks block direct connections. If joining keeps failing, try Wi-Fi on both devices. Online play only works on the website or the installed app, not inside the Claude preview.
 
 ## Controls
 
