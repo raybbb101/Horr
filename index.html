@@ -3,6 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#050506">
+<link rel="icon" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Ashgrove">
 <title>Lights Out at Ashgrove</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -34,8 +42,11 @@ body { background: var(--void); color: var(--bone); overflow: hidden; font-famil
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: calc(24px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
-  overflow-y: auto;
+  overflow-y: auto; justify-content: flex-start;
 }
+.overlay > :first-child { margin-top: auto; }
+.overlay > :last-child { margin-bottom: auto; }
+.actions { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
 .eyebrow { font-size: .8rem; letter-spacing: .18em; text-transform: uppercase; color: var(--ash); margin: 0; }
 h1, h2 { font-family: var(--display); font-weight: 400; margin: 0; line-height: 1; letter-spacing: .04em; text-wrap: balance; }
 h1 { font-size: clamp(2.4rem, 9vw, 5.2rem); text-shadow: 0 0 28px color-mix(in srgb, var(--blood) 55%, transparent); }
@@ -50,6 +61,7 @@ button {
   font-family: var(--type); font-size: 1.1rem; letter-spacing: .06em;
   background: transparent; color: var(--bone); border: 1px solid var(--ash);
   padding: 12px 30px; cursor: pointer; transition: color .2s, border-color .2s, box-shadow .2s;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
 }
 button:hover, button:focus-visible { border-color: var(--sodium); color: var(--sodium); outline: none; box-shadow: 0 0 22px color-mix(in srgb, var(--sodium) 25%, transparent); }
 
@@ -83,7 +95,22 @@ button:hover, button:focus-visible { border-color: var(--sodium); color: var(--s
 
 #touchUI { position: fixed; z-index: 12; display: flex; gap: 12px;
   right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(18px + env(safe-area-inset-bottom, 0px)); }
-#touchUI button { padding: 14px 18px; font-size: .9rem; background: rgba(5, 5, 6, .45); }
+#touchUI button { padding: 0; width: 76px; height: 76px; border-radius: 50%; font-size: .85rem; background: rgba(5, 5, 6, .45); }
+#touchUI button.held { box-shadow: 0 0 18px color-mix(in srgb, var(--sodium) 35%, transparent); }
+#stick { position: fixed; z-index: 9; width: 120px; height: 120px; margin: -60px 0 0 -60px; border: 1px solid rgba(217, 210, 197, .35); border-radius: 50%; pointer-events: none; }
+#knob { position: absolute; left: 38px; top: 38px; width: 44px; height: 44px; border-radius: 50%; background: rgba(217, 210, 197, .28); }
+#stick.run { border-color: var(--sodium); }
+#topBtns { position: fixed; z-index: 12; display: flex; gap: 10px;
+  top: calc(10px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px)); }
+#topBtns button { width: 46px; height: 46px; padding: 0; display: grid; place-items: center; background: rgba(5, 5, 6, .45); border-color: rgba(138, 131, 121, .6); }
+#topBtns svg { width: 20px; height: 20px; stroke: currentColor; fill: none; stroke-width: 2; }
+@media (max-height: 520px) {
+  .overlay { gap: 12px; }
+  h1 { font-size: clamp(1.9rem, 7vh + 1rem, 3rem); }
+  .sub { font-size: .84rem; line-height: 1.5; }
+  .controls { font-size: .76rem; gap: 3px 14px; }
+  .eyebrow, .small { font-size: .7rem; }
+}
 #touchUI button.held { color: var(--sodium); border-color: var(--sodium); }
 
 @media (prefers-reduced-motion: reduce) { #msg, #note, button, .bar i { transition: none; } }
@@ -100,7 +127,12 @@ button:hover, button:focus-visible { border-color: var(--sodium); color: var(--s
 </div>
 <div id="msg" role="status"></div>
 <div id="note" aria-live="polite"></div>
-<div id="touchUI" hidden><button id="tLight" type="button">Lamp</button><button id="tRun" type="button">Run</button></div>
+<div id="touchUI" hidden><button id="tRun" type="button">Run</button><button id="tLight" type="button">Lamp</button></div>
+<div id="stick" hidden><div id="knob"></div></div>
+<div id="topBtns" hidden>
+  <button id="bFull" type="button" aria-label="Toggle fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
+  <button id="bPause" type="button" aria-label="Pause"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+</div>
 
 <section id="title" class="overlay">
   <p class="eyebrow">Ashgrove Sanatorium &middot; East Wing &middot; 03:12</p>
@@ -113,14 +145,21 @@ button:hover, button:focus-visible { border-color: var(--sodium); color: var(--s
     <dt>F / Right-click</dt><dd>Lamp on or off</dd>
     <dt>Esc</dt><dd>Pause</dd>
   </dl>
-  <button id="start" type="button">Enter the ward</button>
-  <p class="small">Headphones recommended. Sound plays once you start.</p>
+  <div class="actions">
+    <button id="start" type="button">Enter the ward</button>
+    <button id="install" type="button" hidden>Install app</button>
+  </div>
+  <p class="small" id="hint">Headphones recommended. Sound plays once you start.</p>
+  <p class="small" id="iosHint" hidden>To install on iPhone: tap Share, then Add to Home Screen.</p>
 </section>
 
 <section id="pause" class="overlay" hidden>
   <h2>Paused</h2>
   <p class="sub">It is still out there. It waits too.</p>
-  <button id="resume" type="button">Resume</button>
+  <div class="actions">
+    <button id="resume" type="button">Resume</button>
+    <button id="restart" type="button">Restart</button>
+  </div>
 </section>
 
 <section id="end" class="overlay" hidden>
@@ -136,13 +175,14 @@ const $ = id => document.getElementById(id);
 const cvs = $('game'), ctx = cvs.getContext('2d');
 const R = Math.random, rand = n => (R() * n) | 0, clamp = (v, a, b) => v < a ? a : v > b ? b : v;
 const T = 64, TM = 63, MW = 23, MH = 23, NFUSE = 5;
+const COARSE = matchMedia('(pointer: coarse)').matches;
 const NOISE = new Float32Array(65536); for (let i = 0; i < 65536; i++) NOISE[i] = R() - .5;
 
 /* ---------- screen buffers ---------- */
 let W = 320, H = 200, F = 200, low, lctx, img, px, zbuf, cone, vig;
 function resize() {
   cvs.width = innerWidth; cvs.height = innerHeight;
-  H = 200; W = clamp(Math.round(H * innerWidth / Math.max(1, innerHeight)), 100, 480);
+  H = COARSE ? 150 : 200; W = clamp(Math.round(H * innerWidth / Math.max(1, innerHeight)), 100, 480);
   F = Math.min(H, W * 0.75);
   low = document.createElement('canvas'); low.width = W; low.height = H; lctx = low.getContext('2d');
   img = lctx.createImageData(W, H); px = img.data; zbuf = new Float32Array(W);
@@ -470,7 +510,7 @@ function tryMove(nx, ny) {
   if (!solid(nx + r, P.y + r) && !solid(nx - r, P.y + r) && !solid(nx + r, P.y - r) && !solid(nx - r, P.y - r)) P.x = nx;
   if (!solid(P.x + r, ny + r) && !solid(P.x - r, ny + r) && !solid(P.x + r, ny - r) && !solid(P.x - r, ny - r)) P.y = ny;
 }
-const touch = { mx: 0, my: 0, moveId: null, lookId: null, ox: 0, oy: 0, lx: 0, run: false };
+const touch = { mx: 0, my: 0, moveId: null, lookId: null, ox: 0, oy: 0, lx: 0, run: false, edge: false };
 function update(dt) {
   let f = 0, s = 0;
   if (keys.KeyW || keys.ArrowUp) f += 1; if (keys.KeyS || keys.ArrowDown) f -= 1;
@@ -479,7 +519,8 @@ function update(dt) {
   f += -touch.my; s += touch.mx;
   const len = Math.hypot(f, s); if (len > 1) { f /= len; s /= len; }
   P.mov = len > .1;
-  const wantRun = keys.ShiftLeft || keys.ShiftRight || touch.run;
+  const wantRun = keys.ShiftLeft || keys.ShiftRight || touch.run || touch.edge;
+  if (touch.run && P.exh) setRun(false);
   P.spr = wantRun && P.mov && !P.exh && P.stam > 0;
   const sp = (P.spr ? 3.6 : 2.1) * dt;
   const cx = Math.cos(P.a), cy = Math.sin(P.a);
@@ -634,24 +675,38 @@ function drawScare(k) {
 
 /* ---------- flow ---------- */
 function setHidden(id, h) { $(id).hidden = h; }
-function lock() { if (matchMedia('(pointer: coarse)').matches) return; try { const p = cvs.requestPointerLock && cvs.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
+const fsEl = document.documentElement;
+const canFS = !!(fsEl.requestFullscreen || fsEl.webkitRequestFullscreen);
+const isFS = () => !!(document.fullscreenElement || document.webkitFullscreenElement);
+function enterFS() {
+  try {
+    const p = (fsEl.requestFullscreen || fsEl.webkitRequestFullscreen).call(fsEl, { navigationUI: 'hide' });
+    const after = () => { try { const o = screen.orientation; if (COARSE && o && o.lock) o.lock('landscape').catch(() => {}); } catch (e) {} };
+    if (p && p.then) p.then(after).catch(() => {}); else after();
+  } catch (e) {}
+}
+function exitFS() { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
+function toggleFS() { if (isFS()) exitFS(); else enterFS(); }
+function playUI(on) { setHidden('hud', !on); setHidden('touchUI', !on || !COARSE); setHidden('topBtns', !on); if (!on) { setHidden('stick', true); setRun(false); } else $('tLight').classList.toggle('held', P.light && P.bat > 0); }
+function lock() { if (COARSE) return; try { const p = cvs.requestPointerLock && cvs.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {} }
 function unlock() { try { if (document.pointerLockElement) document.exitPointerLock(); } catch (e) {} }
 function start() {
   initAudio(); newGame(); state = 'play';
-  ['title', 'pause', 'end'].forEach(id => setHidden(id, true)); setHidden('hud', false);
-  setHidden('touchUI', !matchMedia('(pointer: coarse)').matches);
+  if (COARSE && canFS && !isFS()) enterFS();
+  touch.moveId = touch.lookId = null; touch.mx = touch.my = 0; touch.edge = false;
+  ['title', 'pause', 'end'].forEach(id => setHidden(id, true)); playUI(true);
   say('Find the five fuses. Then find the lift.', 4.5); lock();
 }
-function pause() { if (state !== 'play') return; state = 'pause'; setHidden('pause', false); unlock(); }
-function resume() { if (state !== 'pause') return; initAudio(); state = 'play'; setHidden('pause', true); lock(); }
-function caught() { state = 'scare'; scareT = 0; SFX.scream(); setHidden('hud', true); setHidden('touchUI', true); $('note').style.opacity = 0; $('msg').style.opacity = 0; unlock(); }
+function pause() { if (state !== 'play') return; state = 'pause'; setHidden('pause', false); playUI(false); unlock(); }
+function resume() { if (state !== 'pause') return; initAudio(); state = 'play'; setHidden('pause', true); playUI(true); lock(); }
+function caught() { state = 'scare'; scareT = 0; SFX.scream(); playUI(false); $('note').style.opacity = 0; $('msg').style.opacity = 0; unlock(); }
 function best(t) { try { const b = parseFloat(localStorage.getItem('ashgrove-best')); if (!b || t < b) { localStorage.setItem('ashgrove-best', String(t)); return t; } return b; } catch (e) { return null; } }
 function endGame(won) {
   state = 'end'; const tt = $('endTitle');
   tt.className = won ? '' : 'dead';
   if (won) { const b = best(time); tt.textContent = 'The lift doors close.'; $('endText').textContent = `You escaped the east wing in ${fmt(time)}.` + (b ? ` Best escape: ${fmt(b)}.` : ''); $('again').textContent = 'Play again'; }
   else { tt.textContent = 'It found you.'; $('endText').textContent = `Fuses restored: ${got} of ${NFUSE}. You lasted ${fmt(time)} in the dark.`; $('again').textContent = 'Go back in'; }
-  setHidden('end', false); setHidden('hud', true); setHidden('touchUI', true); $('note').style.opacity = 0; $('msg').style.opacity = 0; unlock();
+  setHidden('end', false); playUI(false); $('note').style.opacity = 0; $('msg').style.opacity = 0; unlock();
 }
 function win() { SFX.ding(); endGame(true); }
 
@@ -696,28 +751,52 @@ document.addEventListener('pointerlockchange', () => {
 cvs.addEventListener('touchstart', e => {
   if (state !== 'play') return; e.preventDefault();
   for (const t of e.changedTouches) {
-    if (t.clientX < innerWidth / 2 && touch.moveId === null) { touch.moveId = t.identifier; touch.ox = t.clientX; touch.oy = t.clientY; }
+    if (t.clientX < innerWidth / 2 && touch.moveId === null) {
+      touch.moveId = t.identifier; touch.ox = t.clientX; touch.oy = t.clientY;
+      const st = $('stick'); st.style.left = t.clientX + 'px'; st.style.top = t.clientY + 'px'; st.hidden = false; moveKnob(0, 0);
+    }
     else if (touch.lookId === null) { touch.lookId = t.identifier; touch.lx = t.clientX; }
   }
 }, { passive: false });
 cvs.addEventListener('touchmove', e => {
   e.preventDefault();
   for (const t of e.changedTouches) {
-    if (t.identifier === touch.moveId) { touch.mx = clamp((t.clientX - touch.ox) / 55, -1, 1); touch.my = clamp((t.clientY - touch.oy) / 55, -1, 1); }
-    else if (t.identifier === touch.lookId) { P.a += (t.clientX - touch.lx) * .008; touch.lx = t.clientX; }
+    if (t.identifier === touch.moveId) {
+      let dx = t.clientX - touch.ox, dy = t.clientY - touch.oy; const r = Math.hypot(dx, dy);
+      touch.edge = r > 80;
+      if (r > 50) { dx *= 50 / r; dy *= 50 / r; }
+      touch.mx = dx / 50; touch.my = dy / 50; moveKnob(dx, dy);
+    }
+    else if (t.identifier === touch.lookId) { P.a += (t.clientX - touch.lx) * .0075; touch.lx = t.clientX; }
   }
 }, { passive: false });
-const endTouch = e => { for (const t of e.changedTouches) { if (t.identifier === touch.moveId) { touch.moveId = null; touch.mx = touch.my = 0; } if (t.identifier === touch.lookId) touch.lookId = null; } };
+function moveKnob(dx, dy) { $('knob').style.transform = `translate(${dx}px, ${dy}px)`; $('stick').classList.toggle('run', touch.edge); }
+const endTouch = e => { for (const t of e.changedTouches) { if (t.identifier === touch.moveId) { touch.moveId = null; touch.mx = touch.my = 0; touch.edge = false; $('stick').hidden = true; } if (t.identifier === touch.lookId) touch.lookId = null; } };
 cvs.addEventListener('touchend', endTouch); cvs.addEventListener('touchcancel', endTouch);
-$('tLight').addEventListener('click', toggleLight);
-const runBtn = $('tRun');
-runBtn.addEventListener('touchstart', e => { e.preventDefault(); touch.run = true; runBtn.classList.add('held'); }, { passive: false });
-runBtn.addEventListener('touchend', () => { touch.run = false; runBtn.classList.remove('held'); });
+const tap = (id, fn) => $(id).addEventListener('pointerdown', e => { e.preventDefault(); e.stopPropagation(); fn(); });
+function setRun(on) { touch.run = on; $('tRun').classList.toggle('held', on); }
+tap('tLight', () => { toggleLight(); $('tLight').classList.toggle('held', P.light && P.bat > 0); });
+tap('tRun', () => setRun(!touch.run));
+tap('bPause', pause);
+tap('bFull', toggleFS);
+if (!canFS) $('bFull').hidden = true;
+$('restart').addEventListener('click', start);
+// installable app (only where the service worker is available, e.g. GitHub Pages)
+let installEvt = null;
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('install').hidden = false; });
+addEventListener('appinstalled', () => { $('install').hidden = true; installEvt = null; });
+$('install').addEventListener('click', async () => { if (!installEvt) return; installEvt.prompt(); try { await installEvt.userChoice; } catch (e) {} installEvt = null; $('install').hidden = true; });
+const standalone = matchMedia('(display-mode: standalone), (display-mode: fullscreen)').matches || navigator.standalone === true;
+const iOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+if ('serviceWorker' in navigator && window.isSecureContext && window.top === window) {
+  navigator.serviceWorker.register('sw.js').then(() => { if (iOS && !standalone) $('iosHint').hidden = false; }).catch(() => {});
+}
 $('start').addEventListener('click', start);
 $('again').addEventListener('click', start);
 $('resume').addEventListener('click', resume);
-if (matchMedia('(pointer: coarse)').matches) {
-  $('controlsList').innerHTML = '<dt>Left thumb</dt><dd>Drag to walk</dd><dt>Right thumb</dt><dd>Drag to look</dd><dt>Run / Lamp</dt><dd>Buttons, bottom right</dd><dt>Tip</dt><dd>Hold your phone sideways</dd>';
+if (COARSE) {
+  $('controlsList').innerHTML = '<dt>Left thumb</dt><dd>Drag to walk, push far to run</dd><dt>Right thumb</dt><dd>Drag to look around</dd><dt>Run / Lamp</dt><dd>Round buttons, bottom right</dd><dt>Top right</dt><dd>Fullscreen and pause</dd>';
+  $('hint').textContent = 'Turn your phone sideways. Headphones recommended.';
 }
 
 addEventListener('resize', resize);

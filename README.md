@@ -23,7 +23,17 @@ python3 -m http.server
 | F, or right-click | Lamp on or off |
 | Esc / P | Pause |
 
-On touch screens, drag with your left thumb to walk and your right thumb to look. Run and Lamp buttons are at the bottom right.
+On phones and tablets, drag with your left thumb to walk (push the stick far to run) and your right thumb to look. Run and Lamp are the round buttons at the bottom right. Fullscreen and pause are at the top right. Starting a game on a phone switches to fullscreen landscape where the browser allows it.
+
+## Install as an app
+
+The game is a Progressive Web App: it can be installed and played offline.
+
+1. Turn on GitHub Pages for this repo: **Settings → Pages → Build and deployment → Deploy from a branch**, pick the branch, folder `/ (root)`, and save.
+2. Open `https://raybbb101.github.io/Horr/` in Chrome.
+3. Tap **Install app** on the title screen, or use Chrome's menu → **Add to Home screen / Install app**.
+
+On iPhone, open the page in Safari and use **Share → Add to Home Screen**.
 
 ## How it works
 
