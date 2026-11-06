@@ -1,7 +1,7 @@
 /* Lights Out at Ashgrove: a raycast horror game with four stages and online co-op. */
 (() => {
 'use strict';
-const VERSION = 3;
+const VERSION = 4;
 const $ = id => document.getElementById(id);
 const cvs = $('game'), ctx = cvs.getContext('2d');
 const R = Math.random, rand = n => (R() * n) | 0, clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -19,36 +19,22 @@ const srandi = n => (srand() * n) | 0;
 function shuffle(a, rng = R) { for (let i = a.length - 1; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; }
 const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }, set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
-/* ---------- stages ---------- */
+/* ---------- stages (text lives in i18n.js) ---------- */
 const STAGES = [
-  { key: 'ward', name: 'The East Wing', place: 'Stage 1 · Ashgrove Sanatorium, East Wing', mon: 'stalker', mname: 'The Night Patient',
-    obj: 'fuse', objN: 5, objName: 'Fuses', objOne: 'Fuse', exit: 'service lift', door: 'lift',
-    intro: 'The power is out and the service lift needs five fuses. The Night Patient sees your lamp from far away and hears you run.',
-    tip: 'Turn the lamp off when you hear it breathing. A camera flash stuns it. A flare drives it off for a while.',
-    amb: [.72, .8, 1], ambK: 1, drain: 1, bats: 5, cams: 1, flares: 1, loops: 70, rooms: 3, drone: 41.2 },
-  { key: 'morgue', name: 'Cold Storage', place: 'Stage 2 · Basement morgue', mon: 'statue', mname: 'The Mannequin',
-    obj: 'key', objN: 4, objName: 'Keys', objOne: 'Drawer key', exit: 'steel door', door: 'steel',
-    intro: 'Four drawer keys open the steel door. The Mannequin only moves when nobody is looking at it, and the power here cuts out without warning.',
-    tip: 'Keep it in your lamp light. In co-op, one of you watches it while the other searches. A flash pins it in place.',
-    amb: [.78, .88, 1], ambK: 1.1, drain: 1, bats: 4, cams: 2, flares: 1, loops: 50, rooms: 4, drone: 36.7, blackout: true },
-  { key: 'boiler', name: 'The Boiler Room', place: 'Stage 3 · Flooded sub-basement', mon: 'blind', mname: 'The Drowned',
-    obj: 'valve', objN: 3, objName: 'Valves', objOne: 'Valve', exit: 'drain hatch', door: 'hatch', hold: 3.2,
-    intro: 'Stand at three valves until they turn to drain the pumps and open the hatch. The Drowned is blind, but it hears every splash, and turning a valve is loud.',
-    tip: 'Move slowly to stay quiet: push the stick only a little, or hold C. The flash only makes noise here, but a flare lures it in and sends it under.',
-    amb: [.62, .85, .8], ambK: 1, drain: 1, bats: 4, cams: 1, flares: 2, loops: 90, rooms: 2, drone: 32.7, water: true },
-  { key: 'chapel', name: 'The Chapel', place: 'Stage 4 · Ashgrove Chapel', mon: 'shade', mname: 'The Hollow',
-    obj: 'candle', objN: 4, objName: 'Candles', objOne: 'Candle', exit: 'chapel doors', door: 'chapel', hold: 2,
-    intro: 'Stand by four candles until they catch to unbar the doors. The Hollow closes in fastest in the dark. It stops while your lamp is on it, but the beam burns the battery.',
-    tip: 'It will not cross the light of a lit candle. A camera flash tears it apart for a while.',
-    amb: [.95, .72, .7], ambK: .5, drain: 1.3, bats: 6, cams: 2, flares: 1, loops: 60, rooms: 5, drone: 49, dark: true }
+  { key: 'ward', mon: 'stalker', obj: 'fuse', objN: 5, door: 'lift', amb: [.72, .8, 1], ambK: 1, drain: 1, bats: 5, cams: 1, flares: 1, loops: 70, rooms: 3, drone: 41.2 },
+  { key: 'morgue', mon: 'statue', obj: 'key', objN: 4, door: 'steel', amb: [.78, .88, 1], ambK: 1.1, drain: 1, bats: 4, cams: 2, flares: 1, loops: 50, rooms: 4, drone: 36.7, blackout: true },
+  { key: 'boiler', mon: 'blind', obj: 'valve', objN: 3, door: 'hatch', hold: 3.2, amb: [.62, .85, .8], ambK: 1, drain: 1, bats: 4, cams: 1, flares: 2, loops: 90, rooms: 2, drone: 32.7, water: true },
+  { key: 'chapel', mon: 'shade', obj: 'candle', objN: 4, door: 'chapel', hold: 2, amb: [.95, .72, .7], ambK: .5, drain: 1.3, bats: 6, cams: 2, flares: 1, loops: 60, rooms: 5, drone: 49, dark: true }
 ];
-const WARD_NOTES = [
-  ['Fuse 1 of 5 · torn from a duty log', 'Whoever finds this: the service lift runs off the old box by the stairwell. Five fuses. Sister Brandt pulled them when they sealed the east wing.'],
-  ['Fuse 2 of 5 · pencil on a chart', 'It does not see well in the dark. It sees the lamp. If you hear it breathing, put your light out and keep walking.'],
-  ['Fuse 3 of 5 · ward intake card', 'Room 14. Admitted 1961. Height on admission 5 ft 9. They measured him every Sunday. By spring the doorframes were too low.'],
-  ['Fuse 4 of 5 · back of a photograph', 'Don’t run unless you have to. The tile carries footsteps three halls over, and it always comes to see who is running.'],
-  ['Fuse 5 of 5 · scratched into the casing', 'That’s all of them. The lift is on the far side. It knows the power is back now. Go.']
-];
+const I18N = window.ASH_I18N;
+let LANG = store.get('ashgrove-lang') === 'ja' ? 'ja' : 'en';
+const L = () => I18N[LANG];
+const stx = (i = stageIdx) => L().stages[i];
+function t(key, p) {
+  const s = stx(), vars = { exit: s.exit, obj: s.objName, objs: s.objs, one: s.objOne, ctr: s.ctr, N: STAGES[stageIdx].objN, stage: s.name, ...(p || {}) };
+  const str = L()[key] ?? I18N.en[key] ?? key;
+  return str.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+}
 
 /* ---------- screen buffers ---------- */
 let W = 320, H = 200, F = 200, low, lctx, img, px, zbuf, cone, vig;
@@ -448,7 +434,7 @@ const isGuest = () => net.role === 'guest';
 function send(o) { if (net.conn && net.open) { try { net.conn.send(o); } catch (e) {} } }
 function loadPeerLib() {
   if (window.Peer) return Promise.resolve();
-  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'vendor/peerjs.min.js'; s.onload = () => window.Peer ? res() : rej(new Error('PeerJS missing')); s.onerror = () => rej(new Error('Could not load the online library.')); document.head.appendChild(s); });
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'vendor/peerjs.min.js'; s.onload = () => window.Peer ? res() : rej(new Error('PeerJS missing')); s.onerror = () => rej(new Error(t('errLib'))); document.head.appendChild(s); });
 }
 function peerOpts() {
   const o = { debug: 0, config: { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] } };
@@ -465,11 +451,11 @@ function closeNet() {
 }
 async function hostRoom() {
   closeNet(); net.role = 'host';
-  lobbyStatus('Opening a room…'); $('roomCode').textContent = '····'; $('lobbyGo').disabled = true;
+  lobbyStatus(t('opening')); $('roomCode').textContent = '····'; $('lobbyGo').disabled = true;
   try { await loadPeerLib(); } catch (e) { lobbyStatus(e.message); return; }
   const tryOpen = attempt => {
     const code = makeCode(); const peer = new Peer(PREFIX + code, peerOpts()); net.peer = peer;
-    peer.on('open', () => { net.code = code; $('roomCode').textContent = code; lobbyStatus('Waiting for your partner to join…'); });
+    peer.on('open', () => { net.code = code; $('roomCode').textContent = code; lobbyStatus(t('waitingJoin')); });
     peer.on('connection', c => {
       if (net.conn && net.open) { c.on('open', () => { c.send({ t: 'full' }); setTimeout(() => c.close(), 400); }); return; }
       attach(c);
@@ -484,19 +470,19 @@ async function hostRoom() {
 }
 async function joinRoom(code) {
   closeNet(); net.role = 'guest'; net.code = code;
-  lobbyStatus('Looking for room ' + code + '…'); $('lobbyGo').disabled = true;
+  lobbyStatus(t('looking', { c: code })); $('lobbyGo').disabled = true;
   try { await loadPeerLib(); } catch (e) { lobbyStatus(e.message); $('lobbyGo').disabled = false; return; }
   const peer = new Peer(undefined, peerOpts()); net.peer = peer;
   peer.on('open', () => {
     attach(peer.connect(PREFIX + code, { reliable: true }));
-    setTimeout(() => { if (net.role === 'guest' && !net.open && state === 'lobby') { lobbyStatus('No answer from room ' + code + '. Check the code and try again.'); $('lobbyGo').disabled = false; } }, 12000);
+    setTimeout(() => { if (net.role === 'guest' && !net.open && state === 'lobby') { lobbyStatus(t('noAnswer', { c: code })); $('lobbyGo').disabled = false; } }, 12000);
   });
-  peer.on('error', e => { if (state === 'lobby') { lobbyStatus(e.type === 'peer-unavailable' ? 'There is no room with the code ' + code + '.' : netError(e)); $('lobbyGo').disabled = false; } });
+  peer.on('error', e => { if (state === 'lobby') { lobbyStatus(e.type === 'peer-unavailable' ? t('noRoom', { c: code }) : netError(e)); $('lobbyGo').disabled = false; } });
 }
 function netError(e) {
-  if (e.type === 'browser-incompatible') return 'This browser cannot play online.';
-  if (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-error') return 'Could not reach the matchmaking server. Check your connection and try again.';
-  return 'Connection problem (' + (e.type || 'unknown') + '). Try again.';
+  if (e.type === 'browser-incompatible') return t('errBrowser');
+  if (e.type === 'network' || e.type === 'server-error' || e.type === 'socket-error') return t('errServer');
+  return t('errOther', { e: e.type || 'unknown' });
 }
 function attach(c) {
   net.conn = c;
@@ -510,44 +496,44 @@ function onNetClose() {
   if (!wasOpen) return;
   if (net.role === 'host') {
     mate.on = false; updateHUD(true);
-    if (state === 'lobby') { lobbyStatus('Your partner left. Waiting for someone to join…'); $('lobbyGo').disabled = true; }
-    else if (state === 'play') say('Your partner disconnected. You are on your own now.', 4);
+    if (state === 'lobby') { lobbyStatus(t('partnerLeftLobby')); $('lobbyGo').disabled = true; }
+    else if (state === 'play') say(t('partnerDisc'), 4);
   } else if (net.role === 'guest') {
     const st = state; closeNet();
-    if (st !== 'title') showEnd('Connection lost.', 'The link to your partner’s game dropped.', { dead: true, guestEnd: true });
+    if (st !== 'title') showEnd(t('lostTitle'), t('lostText'), { dead: true, guestEnd: true });
   }
 }
 function onData(m) {
   if (!m || typeof m !== 'object') return;
   if (net.role === 'host') {
     if (m.t === 'hello') {
-      if (m.v !== VERSION) { send({ t: 'old' }); lobbyStatus('Your partner has a different version of the game. Both of you reload the page.'); return; }
+      if (m.v !== VERSION) { send({ t: 'old' }); lobbyStatus(t('versionGuest')); return; }
       mate.on = true; SFX.join(); send({ t: 'welcome' });
-      if (state === 'lobby') { lobbyStatus('Your partner is here. Press Start when you are both ready.'); $('lobbyGo').disabled = false; }
+      if (state === 'lobby') { lobbyStatus(t('partnerHere')); $('lobbyGo').disabled = false; }
     } else if (m.t === 'me') {
       mate.x = m.x; mate.y = m.y; mate.a = m.a; mate.lamp = !!m.l; mate.spr = !!m.s; mate.spd = m.v || 0; mate.mov = mate.spd > .1;
       if (!mate.seen) { mate.seen = true; mate.rx = m.x; mate.ry = m.y; }
     } else if (m.t === 'use') { if (state === 'play') useWeapon(mate, m.w); }
   } else {
-    if (m.t === 'welcome') { mate.on = true; SFX.join(); lobbyStatus('Connected. Waiting for the host to start…'); }
-    else if (m.t === 'full') { lobbyStatus('That room already has two players.'); $('lobbyGo').disabled = false; }
-    else if (m.t === 'old') { lobbyStatus('The host has a different version of the game. Both of you reload the page.'); }
+    if (m.t === 'welcome') { mate.on = true; SFX.join(); lobbyStatus(t('connected')); }
+    else if (m.t === 'full') { lobbyStatus(t('full')); $('lobbyGo').disabled = false; }
+    else if (m.t === 'old') { lobbyStatus(t('versionHost')); }
     else if (m.t === 'stage') { inv = { ...m.inv }; unlockStage(m.n); mate.on = true; loadStage(m.n, m.seed); showCard(); }
     else if (m.t === 'begin') { if (state === 'card') startPlay(); }
     else if (m.t === 's') applySnap(m);
     else if (m.t === 'ev') onEvent(m);
-    else if (m.t === 'over') { if (m.won) unlockStage(STAGES.length - 1); showEnd(m.title, m.text, { dead: !m.won, guestEnd: true }); }
-    else if (m.t === 'bye') { closeNet(); showEnd('Your partner left.', 'The host went back to the title screen.', { guestEnd: true }); }
+    else if (m.t === 'over') { if (m.won) unlockStage(STAGES.length - 1); const c = endCopy(m); showEnd(c.title, c.text, { dead: !m.won, guestEnd: true }); }
+    else if (m.t === 'bye') { closeNet(); showEnd(t('leftTitle'), t('leftText'), { guestEnd: true }); }
   }
 }
 function onEvent(m) {
   switch (m.k) {
-    case 'say': say(m.s, m.d || 3.5); break;
-    case 'note': showNote(m.tag, m.s); break;
+    case 'say': say(t(m.key, m.p), m.d || 3.5); break;
+    case 'note': showWardNote(m.i); break;
     case 'sfx': sfxAt(m.n, m.x, m.y, m.r || 16); break;
     case 'bat': me.bat = Math.min(100, me.bat + 45); break;
     case 'caught': me.down = true; startScare(); break;
-    case 'revived': me.down = false; me.rv = 0; say('Your partner pulled you back up.'); break;
+    case 'revived': me.down = false; me.rv = 0; say(t('revivedYou')); break;
   }
 }
 function hostSnapshot() {
@@ -572,31 +558,37 @@ function applySnap(s) {
   mate.rv = s.rv[0]; me.rv = s.rv[1]; unlocked = !!s.ul; objDone = s.od;
 }
 // host helpers that reach both players
-function tell(p, s, d) { if (p === me) say(s, d); else send({ t: 'ev', k: 'say', s, d }); }
-function sayAll(s, d) { say(s, d); send({ t: 'ev', k: 'say', s, d }); }
-function noteAll(tag, s) { showNote(tag, s); send({ t: 'ev', k: 'note', tag, s }); }
+// messages travel as keys so each player reads them in their own language
+function tell(p, key, prm, d) { if (p === me) say(t(key, prm), d); else send({ t: 'ev', k: 'say', key, p: prm, d }); }
+function sayAll(key, prm, d) { say(t(key, prm), d); send({ t: 'ev', k: 'say', key, p: prm, d }); }
+function noteAll(i) { showWardNote(i); send({ t: 'ev', k: 'note', i }); }
+function showWardNote(i) { const n = L().notes[i]; if (n) showNote(n[0], n[1]); }
+function endCopy(m) {
+  if (m.won) return { title: t(m.coop ? 'winCoop' : 'winSolo'), text: t('winText', { t: fmt(m.time) }) + (m.best ? t('best', { t: fmt(m.best) }) : '') };
+  return { title: t(m.coop ? 'deadCoop' : 'deadSolo'), text: t('deadText', { n: m.n, t: fmt(m.time) }) };
+}
 function emit(n, x, y, skipMate, r) { sfxAt(n, x, y, r); if (!skipMate) send({ t: 'ev', k: 'sfx', n, x: r2(x), y: r2(y), r }); }
 
 /* ---------- HUD ---------- */
 let lastHud = '';
 function buildHUD() {
-  $('objLbl').textContent = stage.objName;
+  $('objLbl').textContent = stx().objName;
   const box = $('objIcons'); box.innerHTML = '';
   for (let i = 0; i < stage.objN; i++) box.appendChild(document.createElement('b'));
   updateHUD(true);
 }
 function updateHUD(force) {
   const ms = !mate.on ? 'gone' : mate.down ? 'down' : 'ok';
-  const key = [objDone, Math.round(me.bat), Math.round(me.stam * 50), inv.flash, inv.flare, ms, net.role].join('|');
+  const key = [objDone, Math.round(me.bat), Math.round(me.stam * 50), inv.flash, inv.flare, ms, net.role, LANG].join('|');
   if (!force && key === lastHud) return; lastHud = key;
   [...$('objIcons').children].forEach((b, i) => b.classList.toggle('on', i < objDone));
   const bb = $('batBar'); bb.style.width = me.bat + '%'; bb.classList.toggle('low', me.bat < 20);
   $('stamBar').style.width = (me.stam * 100) + '%';
-  $('kit').textContent = `Flash ${inv.flash} · Flare ${inv.flare}`;
-  $('tFlash').textContent = `Flash ${inv.flash}`; $('tFlare').textContent = `Flare ${inv.flare}`;
+  $('kit').textContent = t('kit', { f: inv.flash, r: inv.flare });
+  $('tFlash').textContent = t('tFlash', { n: inv.flash }); $('tFlare').textContent = t('tFlare', { n: inv.flare });
   $('tFlash').classList.toggle('empty', !inv.flash); $('tFlare').classList.toggle('empty', !inv.flare);
   $('mateRow').hidden = !net.role;
-  const msEl = $('mateState'); msEl.textContent = ms === 'gone' ? 'disconnected' : ms === 'down' ? 'down' : 'with you'; msEl.classList.toggle('down', ms !== 'ok');
+  const msEl = $('mateState'); msEl.textContent = t(ms === 'gone' ? 'mateGone' : ms === 'down' ? 'mateDown' : 'mateOk'); msEl.classList.toggle('down', ms !== 'ok');
 }
 function say(t, dur = 3.5) { const m = $('msg'); m.textContent = t; m.style.opacity = 1; msgT = dur; }
 function showNote(tag, text) { const n = $('note'); n.innerHTML = ''; const s = document.createElement('span'); s.className = 'tag'; s.textContent = tag; n.append(s, text); n.style.opacity = 1; noteT = 7; }
@@ -674,7 +666,7 @@ function hostMonster(dt) {
     if (M.frozen) M.st = 'still'; else { M.st = 'hunt'; tx = near.x; ty = near.y; sp = 1.9 + k * .15; }
   } else if (stage.mon === 'blind') {
     const lure = flares.find(f => f.t > 0);
-    if (lure) { M.st = 'hunt'; M.lx = lure.x; M.ly = lure.y; if (dist(lure, M) < 1.3) { banish(14, 'The Drowned thrashes in the flare light and sinks out of sight.'); return 0; } }
+    if (lure) { M.st = 'hunt'; M.lx = lure.x; M.ly = lure.y; if (dist(lure, M) < 1.3) { banish(14, 'drownedBanish'); return 0; } }
     else {
       let heard = null, hd = 1e9;
       for (const p of ps) {
@@ -709,14 +701,14 @@ function caught(p) {
   if (mate.on) {
     M.gone = 9; M.stun = 0;
     if (!alive().length) overT = 1.8;
-    else tell(p === me ? mate : me, 'Your partner is down! Stand over them to pull them back up.', 5);
+    else tell(p === me ? mate : me, 'partnerDown', null, 5);
   } else soloDeath = true;
 }
 
 /* ---------- weapons ---------- */
 function useWeapon(p, w) {
   if (!(w === 'flash' || w === 'flare')) return;
-  if (inv[w] <= 0) { tell(p, w === 'flash' ? 'The camera is out of flashbulbs.' : 'You have no flares left.', 2.5); return; }
+  if (inv[w] <= 0) { tell(p, w === 'flash' ? 'noFlash' : 'noFlare', null, 2.5); return; }
   if (p.down) return;
   inv[w]--;
   const d = dist(p, M), here = M.gone <= 0 && time >= 0;
@@ -724,24 +716,24 @@ function useWeapon(p, w) {
     emit('flash', p.x, p.y, p === mate);
     if (p === me) flashFX = 1;
     hearNoise(p.x, p.y, 10);
-    if (stage.mon === 'blind') { tell(p, 'It can’t see the flash, but it heard the click.'); return; }
+    if (stage.mon === 'blind') { tell(p, 'flashBlind'); return; }
     if (here && d < 9 && inView(p, M.x, M.y, .5)) {
-      if (stage.mon === 'shade') banish(15, 'The Hollow tears apart in the flash. It will knit itself back together.');
-      else if (stage.mon === 'statue') { M.stun = 6; tell(p, 'The flash pins it in place for a few seconds.'); }
-      else { M.stun = 4; M.st = 'search'; M.lx = p.x; M.ly = p.y; tell(p, 'It reels from the flash. Move!'); }
-    } else tell(p, 'The flash lit up nothing.', 2);
+      if (stage.mon === 'shade') banish(15, 'flashShade');
+      else if (stage.mon === 'statue') { M.stun = 6; tell(p, 'flashStatue'); }
+      else { M.stun = 4; M.st = 'search'; M.lx = p.x; M.ly = p.y; tell(p, 'flashStun'); }
+    } else tell(p, 'flashMiss', null, 2);
   } else {
     flares.push({ x: p.x, y: p.y, t: 10, ct: 0 });
     emit('flare', p.x, p.y, false);
-    if (stage.mon === 'blind') { if (here) tell(p, 'The flare hisses. Something in the water turns toward it.'); return; }
-    if (here && d < 3.5) banish(15, 'The flare drives it back into the dark.');
-    else tell(p, 'The flare burns red. It won’t come near the light.', 2.5);
+    if (stage.mon === 'blind') { if (here) tell(p, 'flareWater'); return; }
+    if (here && d < 3.5) banish(15, 'flareBanish');
+    else tell(p, 'flareLit', null, 2.5);
   }
 }
 function pressWeapon(w) {
   if (state !== 'play' || menuOpen || me.down || scareT > 0) return;
   if (!isGuest()) { useWeapon(me, w); updateHUD(); return; }
-  if (inv[w] <= 0) { say(w === 'flash' ? 'The camera is out of flashbulbs.' : 'You have no flares left.', 2.5); return; }
+  if (inv[w] <= 0) { say(t(w === 'flash' ? 'noFlash' : 'noFlare'), 2.5); return; }
   if (w === 'flash') { flashFX = 1; SFX.flash(); }
   inv[w]--; updateHUD(); send({ t: 'use', w });
 }
@@ -765,9 +757,9 @@ function hostWorld(dt) {
     if (it.got) continue;
     const p = ps.find(q => dist(q, it) < .6); if (!p) continue;
     it.got = true; emit('item', it.x, it.y, false, 8);
-    if (it.kind === 'bat') { if (p === me) me.bat = Math.min(100, me.bat + 45); else send({ t: 'ev', k: 'bat' }); tell(p, 'A spare battery. The lamp steadies.'); }
-    else if (it.kind === 'cam') { inv.flash = Math.min(3, inv.flash + 1); tell(p, `A disposable camera. Flashbulbs: ${inv.flash}.`); }
-    else { inv.flare = Math.min(3, inv.flare + 1); tell(p, `A road flare. Flares: ${inv.flare}.`); }
+    if (it.kind === 'bat') { if (p === me) me.bat = Math.min(100, me.bat + 45); else send({ t: 'ev', k: 'bat' }); tell(p, 'gotBat'); }
+    else if (it.kind === 'cam') { inv.flash = Math.min(3, inv.flash + 1); tell(p, 'gotCam', { n: inv.flash }); }
+    else { inv.flare = Math.min(3, inv.flare + 1); tell(p, 'gotFlare', { n: inv.flare }); }
   }
   for (const f of flares) { f.t -= dt; f.ct -= dt; if (f.ct <= 0 && f.t > 0) { f.ct = .25 + R() * .3; sfxAt('crackle', f.x, f.y, 8); } }
   flares = flares.filter(f => f.t > 0);
@@ -782,7 +774,7 @@ function hostWorld(dt) {
   if (mate.on) for (const [a, b] of [[me, mate], [mate, me]]) {
     if (a.down && !b.down && dist(a, b) < 1.2) {
       a.rv += dt / 3;
-      if (a.rv >= 1) { a.down = false; a.rv = 0; emit('revive', a.x, a.y); if (a === me) say('Your partner pulled you back up.'); else send({ t: 'ev', k: 'revived' }); tell(b, 'You got your partner back on their feet.'); }
+      if (a.rv >= 1) { a.down = false; a.rv = 0; emit('revive', a.x, a.y); if (a === me) say(t('revivedYou')); else send({ t: 'ev', k: 'revived' }); tell(b, 'revivedThem'); }
     } else a.rv = Math.max(0, a.rv - dt * .5);
   }
   doorMsgT -= dt; mateDoorT -= dt;
@@ -791,18 +783,18 @@ function hostWorld(dt) {
   for (const p of atDoor) {
     if (p === me ? doorMsgT > 0 : mateDoorT > 0) continue;
     if (p === me) doorMsgT = 3; else mateDoorT = 3;
-    tell(p, unlocked ? `Waiting at the ${stage.exit}. Your partner needs to be here too.` : `The ${stage.exit} won’t open. ${stage.objName}: ${objDone} of ${stage.objN}.`, 2.5);
+    tell(p, unlocked ? 'waitDoor' : 'doorLocked', { n: objDone }, 2.5);
   }
   if (overT > 0) { overT -= dt; if (overT <= 0) gameOver(); }
 }
 function objComplete(o) {
   objDone++;
   emit('pickup', o.x, o.y, false, 30);
-  if (stage.obj === 'fuse') noteAll(...WARD_NOTES[objDone - 1]);
-  else sayAll(`${stage.objOne} ${objDone} of ${stage.objN}.`, 2.5);
+  if (stage.obj === 'fuse') noteAll(objDone - 1);
+  else sayAll('objCount', { n: objDone }, 2.5);
   if (objDone === stage.objN) {
     unlocked = true; emit('power', door.x, door.y, false, 1e9);
-    setTimeout(() => { if (state === 'play') sayAll(`The ${stage.exit} is open. ${mate.on ? 'Get there together.' : 'Get out.'}`, 4); }, 1200);
+    setTimeout(() => { if (state === 'play') sayAll(mate.on ? 'exitOpen' : 'exitOpenSolo', null, 4); }, 1200);
     if (stage.mon === 'stalker' || stage.mon === 'blind') { const p = alive()[0]; if (p) { M.st = stage.mon === 'blind' ? 'hunt' : 'search'; M.lx = p.x; M.ly = p.y; M.linger = 0; M.wake = Math.min(M.wake, time); } }
   }
 }
@@ -843,7 +835,7 @@ function updateLocal(dt) {
   if (me.step > (me.spr ? .8 : .62)) { me.step = 0; if (stage.water) SFX.splash(); else SFX.step(); }
   if (me.light && me.bat > 0 && !me.down) {
     me.bat = Math.max(0, me.bat - dt * 1.05 * stage.drain * (me.beamed ? 4 : 1));
-    if (me.bat === 0) { me.light = false; SFX.click(); say('The lamp sputters out.'); }
+    if (me.bat === 0) { me.light = false; SFX.click(); say(t('lampOut')); }
   }
   const on = lampOn(me);
   flashI = on ? (me.bat < 20 && R() < .12 * (1 - me.bat / 20) + .02 ? .15 + R() * .3 : .95 + R() * .05) : 0;
@@ -901,9 +893,9 @@ function tick(dt) {
   if (msgT > 0) { msgT -= dt; if (msgT <= 0) $('msg').style.opacity = 0; }
   if (noteT > 0) { noteT -= dt; if (noteT <= 0) $('note').style.opacity = 0; }
   let pt = '';
-  if (me.down) pt = me.rv > 0 ? `Your partner is reviving you ${Math.round(me.rv * 100)}%` : 'You are down. Your partner can pull you back up.';
-  else if (mate.on && mate.down && dist(me, mate) < 1.4) pt = `Reviving partner ${Math.round(mate.rv * 100)}%`;
-  else if (stage.hold) { const o = objs.find(q => !q.done && dist(me, q) < 1.0); if (o) pt = `${stage.obj === 'valve' ? 'Turning the valve' : 'Lighting the candle'} ${Math.round(o.prog * 100)}%`; }
+  if (me.down) pt = me.rv > 0 ? t('progRevive', { p: Math.round(me.rv * 100) }) : t('progDown');
+  else if (mate.on && mate.down && dist(me, mate) < 1.4) pt = t('progReviving', { p: Math.round(mate.rv * 100) });
+  else if (stage.hold) { const o = objs.find(q => !q.done && dist(me, q) < 1.0); if (o) pt = t(stage.obj === 'valve' ? 'progValve' : 'progCandle', { p: Math.round(o.prog * 100) }); }
   if ($('prog').textContent !== pt) $('prog').textContent = pt;
   updateHUD();
 }
@@ -1053,7 +1045,7 @@ function drawScare(k, kind) {
 
 /* ---------- flow ---------- */
 const setHidden = (id, h) => { $(id).hidden = h; };
-const OVERLAYS = ['title', 'lobby', 'card', 'pause', 'end'];
+const OVERLAYS = ['title', 'lobby', 'card', 'pause', 'end', 'settings'];
 function showOnly(id) { for (const o of OVERLAYS) setHidden(o, o !== id); }
 const fsEl = document.documentElement;
 const canFS = !!(fsEl.requestFullscreen || fsEl.webkitRequestFullscreen);
@@ -1081,7 +1073,7 @@ function renderStagePick() {
   const box = $('stagePick'), max = unlockedStage(); box.innerHTML = '';
   pickedStage = Math.min(pickedStage, max);
   STAGES.forEach((s, i) => {
-    const b = document.createElement('button'); b.type = 'button'; b.textContent = `${i + 1} · ${s.name}`;
+    const b = document.createElement('button'); b.type = 'button'; b.textContent = t('stagePick', { i: i + 1, name: stx(i).name });
     b.disabled = i > max; b.setAttribute('aria-pressed', String(i === pickedStage));
     b.addEventListener('click', () => { pickedStage = i; renderStagePick(); });
     box.appendChild(b);
@@ -1102,16 +1094,19 @@ function loadStage(n, sd) {
   time = 0; danger = 0; scareT = 0; overT = 0; soloDeath = false; flashFX = 0; net.gotSnap = false;
   setDrone(stage.drone); buildHUD();
 }
+function fillCard() {
+  const s = stx();
+  $('cardPlace').textContent = s.place; $('cardName').textContent = s.name; $('cardMon').textContent = s.mname;
+  $('cardObj').textContent = t(net.role ? 'cardObjCoop' : 'cardObj');
+  $('cardIntro').textContent = s.intro; $('cardTip').textContent = s.tip;
+}
 function showCard() {
-  state = 'card'; menuOpen = false; showOnly('card'); playUI(false); unlock();
-  $('cardPlace').textContent = stage.place; $('cardName').textContent = stage.name; $('cardMon').textContent = stage.mname;
-  $('cardObj').textContent = `${stage.objN} ${stage.objName.toLowerCase()}, then the ${stage.exit}${net.role ? ', together' : ''}`;
-  $('cardIntro').textContent = stage.intro; $('cardTip').textContent = stage.tip;
+  state = 'card'; menuOpen = false; showOnly('card'); playUI(false); unlock(); fillCard();
   setHidden('cardGo', isGuest()); setHidden('cardWait', !isGuest());
 }
 function startPlay() {
   state = 'play'; menuOpen = false; showOnly(null); playUI(true); stageInv = { ...inv };
-  say(`Find the ${stage.objN} ${stage.objName.toLowerCase()}. Then reach the ${stage.exit}.`, 4.5); lock();
+  say(t('find'), 4.5); lock();
 }
 function beginStage() { if (isGuest()) return; initAudio(); if (COARSE) enterFS(); send({ t: 'begin' }); startPlay(); }
 function newRun(n) { runTime = 0; inv = { flash: 1, flare: 1 }; loadStage(n, newSeed()); if (net.role === 'host') send({ t: 'stage', n, seed, inv }); showCard(); }
@@ -1125,10 +1120,9 @@ function stageClear() {
   inv = { flash: Math.max(inv.flash, 1), flare: Math.max(inv.flare, 1) };
   if (stageIdx === STAGES.length - 1) {
     unlockStage(stageIdx);
-    let txt = `You walked out of Ashgrove in ${fmt(runTime)}.`;
-    if (!net.role) { const b = parseFloat(store.get('ashgrove-best')); if (!b || runTime < b) store.set('ashgrove-best', String(runTime)); else txt += ` Best: ${fmt(b)}.`; }
-    const title = net.role ? 'You both made it out.' : 'You made it out.';
-    send({ t: 'over', won: true, title, text: txt }); showEnd(title, txt, {});
+    const m = { t: 'over', won: true, coop: !!net.role, time: runTime };
+    if (!net.role) { const b = parseFloat(store.get('ashgrove-best')); if (!b || runTime < b) store.set('ashgrove-best', String(runTime)); else m.best = b; }
+    send(m); const c = endCopy(m); showEnd(c.title, c.text, {});
     return;
   }
   unlockStage(stageIdx + 1);
@@ -1137,9 +1131,8 @@ function stageClear() {
   showCard();
 }
 function gameOver() {
-  const title = mate.on ? 'It took you both.' : 'It found you.';
-  const text = `${stage.name}: ${stage.objName.toLowerCase()} ${objDone} of ${stage.objN}. You lasted ${fmt(time)} on this floor.`;
-  send({ t: 'over', won: false, title, text }); showEnd(title, text, { dead: true });
+  const m = { t: 'over', won: false, coop: mate.on, n: objDone, time };
+  send(m); const c = endCopy(m); showEnd(c.title, c.text, { dead: true });
 }
 function showEnd(title, text, { dead = false, guestEnd = false } = {}) {
   state = 'end'; menuOpen = false; showOnly('end'); playUI(false); unlock();
@@ -1147,7 +1140,8 @@ function showEnd(title, text, { dead = false, guestEnd = false } = {}) {
   const won = !dead && !guestEnd;
   const canRetry = !isGuest() && dead && !guestEnd;
   setHidden('again', !canRetry && !won);
-  $('again').textContent = won ? 'Play again from stage 1' : 'Try this stage again';
+  againMode = won ? 'replay' : 'retry';
+  $('again').textContent = t(won ? 'playAgain' : 'tryAgain');
   setHidden('endWait', !(isGuest() && net.open));
 }
 function startScare() { scareT = 1.4; scareKind = stage.mon; SFX.scream(); hideTexts(); unlock(); setHidden('stick', true); touch.moveId = null; touch.mx = touch.my = 0; }
@@ -1155,7 +1149,7 @@ function afterScare() { if (soloDeath && !net.role) { soloDeath = false; gameOve
 function pause() {
   if (state !== 'play' || menuOpen) return;
   menuOpen = true; setHidden('pause', false); playUI(false); unlock();
-  $('pauseText').textContent = net.role ? 'The game keeps running for your partner. It is still out there.' : 'It is still out there. It waits too.';
+  $('pauseText').textContent = t(net.role ? 'pauseCoop' : 'pauseSolo');
   setHidden('pRestart', isGuest());
 }
 function resume() { if (!menuOpen) return; initAudio(); menuOpen = false; setHidden('pause', true); playUI(true); lock(); }
@@ -1168,15 +1162,15 @@ function openLobby(role) {
   initAudio(); if (COARSE) enterFS();
   state = 'lobby'; showOnly('lobby');
   setHidden('hostBox', role !== 'host'); setHidden('joinBox', role !== 'guest');
-  $('lobbyEyebrow').textContent = role === 'host' ? `Host co-op · starting at stage ${pickedStage + 1}` : 'Join co-op';
-  $('lobbyGo').textContent = role === 'host' ? 'Start' : 'Join';
+  $('lobbyEyebrow').textContent = role === 'host' ? t('lobbyHost', { n: pickedStage + 1 }) : t('lobbyJoin');
+  $('lobbyGo').textContent = t(role === 'host' ? 'start' : 'join');
   if (role === 'host') hostRoom();
   else { closeNet(); lobbyStatus(''); $('codeIn').value = ''; $('lobbyGo').disabled = false; setTimeout(() => $('codeIn').focus(), 50); }
 }
 function lobbyGo() {
   if (net.role === 'host') { if (mate.on) newRun(pickedStage); return; }
   const code = $('codeIn').value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
-  if (code.length !== 4) { lobbyStatus('Room codes are 4 letters or numbers.'); return; }
+  if (code.length !== 4) { lobbyStatus(t('badCode')); return; }
   joinRoom(code);
 }
 
@@ -1211,7 +1205,7 @@ addEventListener('keyup', e => { keys[e.code] = false; });
 addEventListener('blur', () => { for (const k in keys) keys[k] = false; pause(); });
 function toggleLight() {
   if (me.down) return;
-  if (me.bat <= 0) { SFX.click(); say('The lamp is dead. Find a battery.', 2.5); return; }
+  if (me.bat <= 0) { SFX.click(); say(t('lampDead'), 2.5); return; }
   me.light = !me.light; SFX.click(); $('tLight').classList.toggle('held', me.light);
 }
 let drag = null, everLocked = false;
@@ -1274,19 +1268,41 @@ $('cardGo').addEventListener('click', beginStage);
 $('resume').addEventListener('click', resume);
 $('pRestart').addEventListener('click', () => { menuOpen = false; setHidden('pause', true); retryStage(); });
 $('pLeave').addEventListener('click', toTitle);
-$('again').addEventListener('click', () => { initAudio(); if ($('again').textContent.startsWith('Play again')) { if (net.role === 'host' && mate.on) newRun(0); else if (!isGuest()) { closeNet(); newRun(0); } } else retryStage(); });
+$('again').addEventListener('click', () => { initAudio(); if (againMode === 'replay') { if (net.role === 'host' && mate.on) newRun(0); else if (!isGuest()) { closeNet(); newRun(0); } } else retryStage(); });
 $('toTitle').addEventListener('click', toTitle);
 $('codeIn').addEventListener('input', e => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4); });
 
 if (window.top !== window) {
   for (const id of ['bHost', 'bJoin']) $(id).disabled = true;
-  $('onlineNote').textContent = 'Online co-op works on the game’s website, raybbb101.github.io/Horr, or in the installed app.';
   $('onlineNote').hidden = false;
 }
-if (COARSE) {
-  $('controlsList').innerHTML = '<dt>Left thumb</dt><dd>Drag to walk. A small push sneaks, a far push runs</dd><dt>Right thumb</dt><dd>Drag to look around</dd><dt>Flash / Flare</dt><dd>Weapons with a few uses each</dd><dt>Run / Lamp</dt><dd>Toggle buttons</dd>';
-  $('hint').textContent = 'Turn your phone sideways. Headphones recommended.';
+/* ---------- language & settings ---------- */
+let againMode = 'retry', settingsBack = 'title';
+function applyLang() {
+  document.documentElement.lang = LANG;
+  document.title = t('h1');
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+  document.querySelectorAll('[data-lang]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.lang === LANG)));
+  $('controlsList').innerHTML = L()[COARSE ? 'controlsTouch' : 'controlsDesk'];
+  $('hint').textContent = t(COARSE ? 'hintTouch' : 'hintDesk');
+  $('onlineNote').textContent = t('onlineNote');
+  $('pauseText').textContent = t(net.role ? 'pauseCoop' : 'pauseSolo');
+  renderStagePick(); buildHUD();
+  if (state === 'card') fillCard();
 }
+function setLang(l) { if (!I18N[l]) return; LANG = l; store.set('ashgrove-lang', l); applyLang(); }
+function openSettings(from) {
+  settingsBack = from;
+  if (from === 'pause') setHidden('pause', true); else showOnly('settings');
+  setHidden('settings', false);
+  const cur = document.querySelector(`[data-lang="${LANG}"]`); if (cur) cur.focus();
+}
+function closeSettings() { setHidden('settings', true); if (settingsBack === 'pause') setHidden('pause', false); else showOnly('title'); }
+document.querySelectorAll('[data-lang]').forEach(b => b.addEventListener('click', () => setLang(b.dataset.lang)));
+$('bSettings').addEventListener('click', () => openSettings('title'));
+$('pSettings').addEventListener('click', () => openSettings('pause'));
+$('setClose').addEventListener('click', closeSettings);
 // installable app (only where the service worker is available, e.g. GitHub Pages)
 let installEvt = null;
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('install').hidden = false; });
@@ -1302,6 +1318,6 @@ addEventListener('beforeunload', () => { if (net.open) send({ t: 'bye' }); });
 if (QS.has('debug')) window.__g = { me, mate, M, net, get objs() { return objs; }, get items() { return items; }, get map() { return map; }, get door() { return door; }, get state() { return state; }, get stage() { return stageIdx; }, get inv() { return inv; }, get menuOpen() { return menuOpen; }, loadStage, stageClear, newRun, MW };
 
 addEventListener('resize', resize);
-resize(); buildSprites(); renderStagePick(); loadStage(0, newSeed()); M.wake = 1e9;
+resize(); buildSprites(); loadStage(0, newSeed()); M.wake = 1e9; applyLang();
 requestAnimationFrame(frame);
 })();

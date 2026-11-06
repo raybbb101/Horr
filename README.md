@@ -44,6 +44,12 @@ Online play uses [PeerJS](https://peerjs.com/) (`vendor/peerjs.min.js`, MIT lice
 | E | Flare | Light a flare |
 | Esc / P | Pause button | Pause (in co-op the game keeps running) |
 
+## Settings and language
+
+**Settings** (on the title screen and in the pause menu) switches the language between English (default) and Japanese (日本語). The choice is remembered on the device. In co-op each player can use a different language, because the game sends message IDs between players, not text.
+
+All text lives in `i18n.js`. To add a language, copy the `en` block, translate it, and add a button with `data-lang="<code>"` to the Settings screen in `index.html`.
+
 ## Play and install
 
 - Open `index.html` through a web server (`python3 -m http.server`, then visit http://localhost:8000).
@@ -53,5 +59,6 @@ Online play uses [PeerJS](https://peerjs.com/) (`vendor/peerjs.min.js`, MIT lice
 
 - `index.html`: screens and styling
 - `game.js`: the game (raycaster, stages, monsters, weapons, audio, co-op netcode)
+- `i18n.js`: all English and Japanese text
 - `sw.js`, `manifest.webmanifest`, `icons/`: installable app and offline support
 - `vendor/peerjs.min.js`: PeerJS 1.5.4 for online play

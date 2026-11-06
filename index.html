@@ -16,7 +16,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Special+Elite&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Special+Elite&family=DotGothic16&family=Zen+Antique&display=swap">
 <style>
 /* Layout: a full-bleed pixel canvas; menus are typewritten case files laid over the dark ward. */
 :root {
@@ -31,6 +31,13 @@
   --type: 'Special Elite', 'Courier New', Courier, monospace;
   color-scheme: dark;
 }
+:root:lang(ja) {
+  --display: 'Zen Antique', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+  --type: 'DotGothic16', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
+}
+:root:lang(ja) h1 { font-size: clamp(2rem, 6.4vw, 4.2rem); letter-spacing: .06em; line-height: 1.15; }
+:root:lang(ja) h2 { line-height: 1.2; }
+:root:lang(ja) .sub { line-height: 1.8; }
 html, body { height: 100%; margin: 0; }
 [hidden] { display: none !important; }
 body { background: var(--void); color: var(--bone); overflow: hidden; font-family: var(--type); user-select: none; -webkit-user-select: none; }
@@ -71,7 +78,9 @@ button.primary { border-color: var(--bone); }
 .stagepick { display: grid; gap: 8px; justify-items: center; }
 .stages { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .stages button { font-size: .8rem; padding: 8px 12px; }
-.stages button[aria-pressed="true"] { border-color: var(--sodium); color: var(--sodium); }
+.setting { display: grid; gap: 10px; justify-items: center; }
+[data-lang] { min-width: 9em; }
+[data-lang][aria-pressed="true"], .stages button[aria-pressed="true"] { border-color: var(--sodium); color: var(--sodium); }
 
 .code { font-family: var(--display); font-size: clamp(3rem, 14vw, 5.5rem); letter-spacing: .25em; color: var(--sodium); margin: 0; padding-left: .25em; line-height: 1; }
 #codeIn {
@@ -143,41 +152,42 @@ button.primary { border-color: var(--bone); }
 <!-- /artifact:head -->
 </head>
 <body>
-<canvas id="game" aria-label="First-person view of the hospital"></canvas>
+<canvas id="game" data-i18n-aria="aView" aria-label="First-person view of the hospital"></canvas>
 
 <div id="hud" hidden>
   <div class="hud-row"><span class="lbl" id="objLbl">Fuses</span><span id="objIcons"></span></div>
-  <div class="hud-row"><span class="lbl">Lamp</span><div class="bar"><i id="batBar"></i></div></div>
-  <div class="hud-row"><span class="lbl">Breath</span><div class="bar"><i id="stamBar"></i></div></div>
-  <div class="hud-row"><span class="lbl">Kit</span><span id="kit"></span></div>
-  <div class="hud-row" id="mateRow" hidden><span class="lbl">Partner</span><span id="mateState"></span></div>
+  <div class="hud-row"><span class="lbl" data-i18n="hudLamp">Lamp</span><div class="bar"><i id="batBar"></i></div></div>
+  <div class="hud-row"><span class="lbl" data-i18n="hudBreath">Breath</span><div class="bar"><i id="stamBar"></i></div></div>
+  <div class="hud-row"><span class="lbl" data-i18n="hudKit">Kit</span><span id="kit"></span></div>
+  <div class="hud-row" id="mateRow" hidden><span class="lbl" data-i18n="hudPartner">Partner</span><span id="mateState"></span></div>
 </div>
 <div id="msg" role="status"></div>
 <div id="prog"></div>
 <div id="note" aria-live="polite"></div>
 <div id="touchUI" hidden>
   <button id="tFlash" class="weapon" type="button">Flash</button><button id="tFlare" class="weapon" type="button">Flare</button>
-  <button id="tRun" type="button">Run</button><button id="tLight" type="button">Lamp</button>
+  <button id="tRun" type="button" data-i18n="tRun">Run</button><button id="tLight" type="button" data-i18n="tLight">Lamp</button>
 </div>
 <div id="stick" hidden><div id="knob"></div></div>
 <div id="topBtns" hidden>
-  <button id="bFull" type="button" aria-label="Toggle fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
-  <button id="bPause" type="button" aria-label="Pause"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
+  <button id="bFull" type="button" data-i18n-aria="aFull" aria-label="Toggle fullscreen"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
+  <button id="bPause" type="button" data-i18n-aria="aPause" aria-label="Pause"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg></button>
 </div>
 
 <section id="title" class="overlay">
-  <p class="eyebrow">Ashgrove Sanatorium &middot; closed 1974</p>
-  <h1>Lights Out at Ashgrove</h1>
-  <p class="sub">Four floors of a dead hospital, and something different waiting on each one. Find what opens the way out, and don't let it reach you. Play alone, or bring one friend in with a room code.</p>
+  <p class="eyebrow" data-i18n="eyebrowTitle">Ashgrove Sanatorium &middot; closed 1974</p>
+  <h1 data-i18n="h1">Lights Out at Ashgrove</h1>
+  <p class="sub" data-i18n="titleSub">Four floors of a dead hospital, and something different waiting on each one. Find what opens the way out, and don't let it reach you. Play alone, or bring one friend in with a room code.</p>
   <div class="actions">
-    <button id="bSolo" class="primary" type="button">Play alone</button>
-    <button id="bHost" type="button">Host co-op</button>
-    <button id="bJoin" type="button">Join co-op</button>
-    <button id="install" type="button" hidden>Install app</button>
+    <button id="bSolo" class="primary" type="button" data-i18n="solo">Play alone</button>
+    <button id="bHost" type="button" data-i18n="host">Host co-op</button>
+    <button id="bJoin" type="button" data-i18n="join">Join co-op</button>
+    <button id="install" type="button" data-i18n="install" hidden>Install app</button>
+    <button id="bSettings" type="button" data-i18n="settings">Settings</button>
   </div>
   <p class="small" id="onlineNote" hidden></p>
   <div class="stagepick">
-    <p class="eyebrow">Start from</p>
+    <p class="eyebrow" data-i18n="startFrom">Start from</p>
     <div class="stages" id="stagePick"></div>
   </div>
   <dl class="controls" id="controlsList">
@@ -190,23 +200,23 @@ button.primary { border-color: var(--bone); }
     <dt>Esc</dt><dd>Pause</dd>
   </dl>
   <p class="small" id="hint">Headphones recommended. Sound plays once you start.</p>
-  <p class="small" id="iosHint" hidden>To install on iPhone: tap Share, then Add to Home Screen.</p>
+  <p class="small" id="iosHint" data-i18n="iosHint" hidden>To install on iPhone: tap Share, then Add to Home Screen.</p>
 </section>
 
 <section id="lobby" class="overlay" hidden>
   <p class="eyebrow" id="lobbyEyebrow">Co-op</p>
   <div id="hostBox" hidden>
-    <p class="sub">Give your partner this room code.</p>
+    <p class="sub" data-i18n="hostCodeSub">Give your partner this room code.</p>
     <p class="code" id="roomCode">&middot;&middot;&middot;&middot;</p>
   </div>
   <div id="joinBox" hidden>
-    <p class="sub">Type the room code from your partner&rsquo;s screen.</p>
-    <p><input id="codeIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code" inputmode="text"></p>
+    <p class="sub" data-i18n="joinSub">Type the room code from your partner&rsquo;s screen.</p>
+    <p><input id="codeIn" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-label="Room code" data-i18n-aria="codeAria" inputmode="text"></p>
   </div>
   <p class="status" id="lobbyStatus"></p>
   <div class="actions">
     <button id="lobbyGo" class="primary" type="button">Start</button>
-    <button id="lobbyBack" type="button">Back</button>
+    <button id="lobbyBack" type="button" data-i18n="back">Back</button>
   </div>
 </section>
 
@@ -214,22 +224,23 @@ button.primary { border-color: var(--bone); }
   <p class="eyebrow" id="cardPlace"></p>
   <h2 id="cardName"></h2>
   <div class="meta">
-    <span>It walks here: <b id="cardMon"></b></span>
-    <span>Objective: <b id="cardObj"></b></span>
+    <span><span data-i18n="walksHere">It walks here:</span> <b id="cardMon"></b></span>
+    <span><span data-i18n="objective">Objective:</span> <b id="cardObj"></b></span>
   </div>
   <p class="sub" id="cardIntro"></p>
   <p class="small" id="cardTip"></p>
-  <button id="cardGo" class="primary" type="button">Begin</button>
-  <p class="status" id="cardWait" hidden>Waiting for the host to begin&hellip;</p>
+  <button id="cardGo" class="primary" type="button" data-i18n="begin">Begin</button>
+  <p class="status" id="cardWait" data-i18n="waitBegin" hidden>Waiting for the host to begin&hellip;</p>
 </section>
 
 <section id="pause" class="overlay" hidden>
-  <h2>Paused</h2>
+  <h2 data-i18n="paused">Paused</h2>
   <p class="sub" id="pauseText">It is still out there. It waits too.</p>
   <div class="actions">
-    <button id="resume" class="primary" type="button">Resume</button>
-    <button id="pRestart" type="button">Restart stage</button>
-    <button id="pLeave" type="button">Leave to title</button>
+    <button id="resume" class="primary" type="button" data-i18n="resume">Resume</button>
+    <button id="pRestart" type="button" data-i18n="restart">Restart stage</button>
+    <button id="pSettings" type="button" data-i18n="settings">Settings</button>
+    <button id="pLeave" type="button" data-i18n="leave">Leave to title</button>
   </div>
 </section>
 
@@ -238,11 +249,24 @@ button.primary { border-color: var(--bone); }
   <p id="endText" class="sub"></p>
   <div class="actions">
     <button id="again" class="primary" type="button">Try this stage again</button>
-    <button id="toTitle" type="button">Title screen</button>
+    <button id="toTitle" type="button" data-i18n="toTitle">Title screen</button>
   </div>
-  <p class="status" id="endWait" hidden>Waiting for the host&hellip;</p>
+  <p class="status" id="endWait" data-i18n="waitHost" hidden>Waiting for the host&hellip;</p>
 </section>
 
+<section id="settings" class="overlay" hidden>
+  <h2 data-i18n="settings">Settings</h2>
+  <div class="setting">
+    <p class="eyebrow" data-i18n="language">Language</p>
+    <div class="actions" role="group">
+      <button type="button" data-lang="en" lang="en">English</button>
+      <button type="button" data-lang="ja" lang="ja">日本語</button>
+    </div>
+  </div>
+  <button id="setClose" class="primary" type="button" data-i18n="close">Close</button>
+</section>
+
+<script src="i18n.js"></script>
 <script src="game.js"></script>
 </body>
 </html>
