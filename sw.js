@@ -1,5 +1,5 @@
 // Offline support: serve the game from cache, refresh the cache in the background.
-const CACHE = 'ashgrove-v4';
+const CACHE = 'ashgrove-v5';
 const CORE = ['./', 'index.html', 'i18n.js', 'game.js', 'vendor/peerjs.min.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png'];
 
 self.addEventListener('install', e => {

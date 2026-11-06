@@ -107,6 +107,12 @@ button.primary { border-color: var(--bone); }
 #objIcons b.on { background: var(--sodium); border-color: var(--sodium); box-shadow: 0 0 8px var(--sodium); }
 #mateState.down { color: var(--blood); }
 
+#mini {
+  position: fixed; z-index: 11; width: 124px; height: 124px; image-rendering: pixelated;
+  top: calc(66px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
+  background: rgba(5, 5, 6, .6); border: 1px solid rgba(138, 131, 121, .6); pointer-events: none;
+}
+@media (pointer: coarse), (max-height: 520px) { #mini { width: 100px; height: 100px; top: calc(62px + env(safe-area-inset-top, 0px)); } }
 #msg, #prog {
   position: fixed; z-index: 10; left: 50%; transform: translateX(-50%);
   width: min(560px, calc(100% - 32px)); text-align: center; color: var(--bone);
@@ -161,6 +167,7 @@ button.primary { border-color: var(--bone); }
   <div class="hud-row"><span class="lbl" data-i18n="hudKit">Kit</span><span id="kit"></span></div>
   <div class="hud-row" id="mateRow" hidden><span class="lbl" data-i18n="hudPartner">Partner</span><span id="mateState"></span></div>
 </div>
+<canvas id="mini" width="138" height="138" data-i18n-aria="aMap" role="img" aria-label="Map" hidden></canvas>
 <div id="msg" role="status"></div>
 <div id="prog"></div>
 <div id="note" aria-live="polite"></div>

@@ -1,7 +1,7 @@
 /* Lights Out at Ashgrove: a raycast horror game with four stages and online co-op. */
 (() => {
 'use strict';
-const VERSION = 4;
+const VERSION = 5;
 const $ = id => document.getElementById(id);
 const cvs = $('game'), ctx = cvs.getContext('2d');
 const R = Math.random, rand = n => (R() * n) | 0, clamp = (v, a, b) => v < a ? a : v > b ? b : v;
@@ -269,7 +269,7 @@ function buildSprites() {
 
 /* ---------- world state ---------- */
 let stageIdx = 0, stage = STAGES[0], set = null, seed = 1;
-let map, floors, door, objs = [], items = [], flares = [], distCache;
+let map, floors, door, objs = [], items = [], flares = [], distCache, seen = new Uint8Array(MW * MH), miniT = 0;
 let objDone = 0, unlocked = false, blackout = 0, boT = 0, buzzed = false;
 let state = 'title', time = 0, runTime = 0, scareT = 0, scareKind = 'stalker', overT = 0, soloDeath = false, menuOpen = false;
 let danger = 0, heartT = 0, heartPulse = 0, ambT = 8, breathT = 0, msgT = 0, noteT = 0, flashI = 0, flashFX = 0, doorMsgT = 0, mateDoorT = 0;
@@ -328,7 +328,7 @@ function genMap(sd, st) {
       if (objs.length >= st.objN) break;
       const p = centre(c);
       if (used.has(c) || objs.some(o => Math.abs(o.x - p.x) + Math.abs(o.y - p.y) < minSep)) continue;
-      objs.push({ c, x: p.x, y: p.y, done: false, prog: 0, ph: srand() * 6, sndT: 0 }); used.add(c);
+      objs.push({ c, x: p.x, y: p.y, done: false, prog: 0, ph: srand() * 6, sndT: 0, spot: false }); used.add(c);
     }
     if (objs.length >= st.objN) break;
   }
@@ -505,6 +505,7 @@ function onNetClose() {
 }
 function onData(m) {
   if (!m || typeof m !== 'object') return;
+  if (m.t === 'spot') { const o = objs[m.i]; if (o) o.spot = true; return; }
   if (net.role === 'host') {
     if (m.t === 'hello') {
       if (m.v !== VERSION) { send({ t: 'old' }); lobbyStatus(t('versionGuest')); return; }
@@ -863,6 +864,10 @@ function monsterAudio(dt, moved) {
 }
 function tick(dt) {
   updateLocal(dt);
+  if (!me.down) {
+    const lim = lampOn(me) ? 7 : 2.5;
+    objs.forEach((o, i) => { if (!o.spot && dist(me, o) < lim && inView(me, o.x, o.y, .65)) { o.spot = true; if (net.open) send({ t: 'spot', i }); } });
+  }
   let moved = 0;
   if (!isGuest()) moved = hostMonster(dt);
   else {
@@ -910,6 +915,7 @@ function light(i, d) {
 }
 function render() {
   const dirX = Math.cos(me.a), dirY = Math.sin(me.a), pl = W / (2 * F), plX = -dirY * pl, plY = dirX * pl, half = H / 2;
+  const seeLim = lampOn(me) ? 7 : 2.5;
   const ak = stage.ambK * (blackout > 0 ? .55 : 1); AR = stage.amb[0] * ak; AG = stage.amb[1] * ak; AB = stage.amb[2] * ak;
   GR = GG = GB = 0;
   if (me.down) { GR = .5; GG = .12; GB = .1; }
@@ -940,9 +946,11 @@ function render() {
     let sx, sy, sdx, sdy, side = 0, cell = 0;
     if (rdx < 0) { sx = -1; sdx = (me.x - mx) * ddx; } else { sx = 1; sdx = (mx + 1 - me.x) * ddx; }
     if (rdy < 0) { sy = -1; sdy = (me.y - my) * ddy; } else { sy = 1; sdy = (my + 1 - me.y) * ddy; }
+    seen[idx(mx, my)] = 1;
     for (let n = 0; n < 64; n++) {
+      const dIn = sdx < sdy ? sdx : sdy;
       if (sdx < sdy) { sdx += ddx; mx += sx; side = 0; } else { sdy += ddy; my += sy; side = 1; }
-      cell = map[idx(mx, my)]; if (cell) break;
+      cell = map[idx(mx, my)]; if (dIn < seeLim) seen[idx(mx, my)] = 1; if (cell) break;
     }
     const perp = Math.max(.05, side === 0 ? sdx - ddx : sdy - ddy);
     zbuf[x] = perp;
@@ -1013,6 +1021,31 @@ function present() {
   ctx.drawImage(low, (cw - dw) / 2, (ch - dh) / 2 + me.bobY * s, dw, dh);
   if (flashFX > 0) { ctx.fillStyle = `rgba(255,255,250,${flashFX * .85})`; ctx.fillRect(0, 0, cw, ch); }
 }
+const MS = 6;
+function drawMini() {
+  const c = $('mini'), g = c.getContext('2d');
+  g.clearRect(0, 0, c.width, c.height);
+  for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
+    const i = idx(x, y); if (!seen[i]) continue;
+    const v = map[i];
+    g.fillStyle = v === 0 ? '#2e2a25' : v === 2 ? (unlocked ? '#5dff7a' : '#c0392b') : '#7d766c';
+    g.fillRect(x * MS, y * MS, MS, MS);
+  }
+  const blink = Math.sin(time * 5) > -.3;
+  for (const o of objs) {
+    const x = o.x * MS, y = o.y * MS;
+    if (o.done) { g.fillStyle = '#e6b34a'; g.fillRect(x - 2.5, y - 2.5, 5, 5); }
+    else if (o.spot && blink) { g.strokeStyle = '#e6b34a'; g.lineWidth = 1.5; g.strokeRect(x - 2.5, y - 2.5, 5, 5); }
+  }
+  if (mate.on && mate.down) {
+    const pl = .5 + .5 * Math.sin(time * 6);
+    g.fillStyle = `rgba(255,59,47,${.55 + .45 * pl})`; g.beginPath(); g.arc(mate.rx * MS, mate.ry * MS, 3 + pl * 2, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(255,59,47,.5)'; g.lineWidth = 1; g.beginPath(); g.arc(mate.rx * MS, mate.ry * MS, 6 + pl * 4, 0, 7); g.stroke();
+  }
+  g.save(); g.translate(me.x * MS, me.y * MS); g.rotate(me.a);
+  g.fillStyle = me.down ? '#ff3b2f' : '#f2ead9'; g.beginPath(); g.moveTo(4.5, 0); g.lineTo(-3, 3); g.lineTo(-1.5, 0); g.lineTo(-3, -3); g.closePath(); g.fill();
+  g.restore();
+}
 function drawScare(k, kind) {
   const cw = cvs.width, ch = cvs.height;
   ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cw, ch);
@@ -1060,7 +1093,7 @@ function enterFS() {
 }
 function exitFS() { try { (document.exitFullscreen || document.webkitExitFullscreen).call(document); } catch (e) {} }
 function playUI(on) {
-  setHidden('hud', !on); setHidden('touchUI', !on || !COARSE); setHidden('topBtns', !on);
+  setHidden('hud', !on); setHidden('touchUI', !on || !COARSE); setHidden('topBtns', !on); setHidden('mini', !on);
   if (!on) { setHidden('stick', true); setRun(false); touch.moveId = touch.lookId = null; touch.mx = touch.my = 0; touch.edge = false; hideTexts(); }
   else $('tLight').classList.toggle('held', me.light && me.bat > 0);
 }
@@ -1090,7 +1123,7 @@ function loadStage(n, sd) {
   Object.assign(mate, { x: theirs.x, y: theirs.y, rx: theirs.x, ry: theirs.y, a: startA, lamp: true, down: false, rv: 0, beamed: false, seen: false, mov: false, spr: false, spd: 0 });
   Object.assign(M, { st: 'wander', gone: 0, stun: 0, frozen: false, lost: 0, linger: 0, wake: stage.mon === 'statue' ? 10 : 8, stuck: 0, lastSt: 'wander', cryT: 3, step: 0, tx: M.x, ty: M.y });
   pickWander();
-  objDone = 0; unlocked = false; flares = []; blackout = 0; boT = 12 + R() * 8; buzzed = false;
+  seen = new Uint8Array(MW * MH); objDone = 0; unlocked = false; flares = []; blackout = 0; boT = 12 + R() * 8; buzzed = false;
   time = 0; danger = 0; scareT = 0; overT = 0; soloDeath = false; flashFX = 0; net.gotSnap = false;
   setDrone(stage.drone); buildHUD();
 }
@@ -1183,7 +1216,7 @@ function frame(ts) {
     if (run) { time += dt; runTime += dt; tick(dt); }
     if (state !== 'play') return;
     if (scareT > 0) { if (run) scareT -= dt; drawScare(1 - scareT / 1.4, scareKind); if (scareT <= 0) afterScare(); }
-    else { render(); present(); }
+    else { render(); present(); if (++miniT % 3 === 0) drawMini(); }
   } else if (state === 'title' || state === 'card' || state === 'lobby') {
     time += dt; me.a += dt * .12; flashI = .85 + R() * .05; danger = 0; me.bobY = 0; blackout = 0; render(); present();
   }
@@ -1315,7 +1348,7 @@ if ('serviceWorker' in navigator && window.isSecureContext && window.top === win
 }
 addEventListener('beforeunload', () => { if (net.open) send({ t: 'bye' }); });
 
-if (QS.has('debug')) window.__g = { me, mate, M, net, get objs() { return objs; }, get items() { return items; }, get map() { return map; }, get door() { return door; }, get state() { return state; }, get stage() { return stageIdx; }, get inv() { return inv; }, get menuOpen() { return menuOpen; }, loadStage, stageClear, newRun, MW };
+if (QS.has('debug')) window.__g = { me, mate, M, net, get objs() { return objs; }, get items() { return items; }, get map() { return map; }, get door() { return door; }, seenCount: () => seen.reduce((a, v) => a + v, 0), get state() { return state; }, get stage() { return stageIdx; }, get inv() { return inv; }, get menuOpen() { return menuOpen; }, loadStage, stageClear, newRun, MW };
 
 addEventListener('resize', resize);
 resize(); buildSprites(); loadStage(0, newSeed()); M.wake = 1e9; applyLang();

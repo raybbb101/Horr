@@ -13,7 +13,10 @@ Ashgrove Sanatorium closed in 1974. Each floor has a different monster with its 
 | 3 | The Boiler Room | The Drowned | Blind. Hunts by sound: splashing, running and turning valves are loud | Turn 3 valves, then the drain hatch |
 | 4 | The Chapel | The Hollow | Closes in fastest in the dark. Stops while a lamp beam is on it, which drains the battery fast. Won't cross a lit candle | Light 4 candles, then the chapel doors |
 
-Each stage is a new random maze every time. Clearing a stage unlocks it on the title screen.
+Each stage is a new random maze every time.
+
+The map in the top right starts blank and fills in as you see the halls (farther with the lamp on). Objectives you have spotted show as outlined squares, collected ones as solid squares, and a downed partner as a pulsing red dot wherever they are. The monster never shows on the map. In co-op, objectives either player spots appear on both maps.
+ Clearing a stage unlocks it on the title screen.
 
 ## Weapons
 
