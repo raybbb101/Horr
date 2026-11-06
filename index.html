@@ -16,7 +16,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Special+Elite&family=DotGothic16&family=Zen+Antique&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Special+Elite&family=DotGothic16&family=Zen+Antique&family=LXGW+WenKai+TC&family=Noto+Serif+TC:wght@600&display=swap">
 <style>
 /* Layout: a full-bleed pixel canvas; menus are typewritten case files laid over the dark ward. */
 :root {
@@ -35,6 +35,13 @@
   --display: 'Zen Antique', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
   --type: 'DotGothic16', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', 'Meiryo', sans-serif;
 }
+:root:lang(zh) {
+  --display: 'Noto Serif TC', 'PingFang TC', 'Microsoft JhengHei', serif;
+  --type: 'LXGW WenKai TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+:root:lang(zh) h1 { font-size: clamp(2.2rem, 7vw, 4.4rem); letter-spacing: .1em; line-height: 1.15; }
+:root:lang(zh) h2 { line-height: 1.2; }
+:root:lang(zh) .sub { line-height: 1.8; }
 :root:lang(ja) h1 { font-size: clamp(2rem, 6.4vw, 4.2rem); letter-spacing: .06em; line-height: 1.15; }
 :root:lang(ja) h2 { line-height: 1.2; }
 :root:lang(ja) .sub { line-height: 1.8; }
@@ -108,11 +115,11 @@ button.primary { border-color: var(--bone); }
 #mateState.down { color: var(--blood); }
 
 #mini {
-  position: fixed; z-index: 11; width: 124px; height: 124px; image-rendering: pixelated;
+  position: fixed; z-index: 11; width: 156px; height: 156px; image-rendering: pixelated;
   top: calc(66px + env(safe-area-inset-top, 0px)); right: max(16px, env(safe-area-inset-right, 0px));
   background: rgba(5, 5, 6, .6); border: 1px solid rgba(138, 131, 121, .6); pointer-events: none;
 }
-@media (pointer: coarse), (max-height: 520px) { #mini { width: 100px; height: 100px; top: calc(62px + env(safe-area-inset-top, 0px)); } }
+@media (pointer: coarse), (max-height: 520px) { #mini { width: 128px; height: 128px; top: calc(62px + env(safe-area-inset-top, 0px)); } }
 #msg, #prog {
   position: fixed; z-index: 10; left: 50%; transform: translateX(-50%);
   width: min(560px, calc(100% - 32px)); text-align: center; color: var(--bone);
@@ -167,7 +174,7 @@ button.primary { border-color: var(--bone); }
   <div class="hud-row"><span class="lbl" data-i18n="hudKit">Kit</span><span id="kit"></span></div>
   <div class="hud-row" id="mateRow" hidden><span class="lbl" data-i18n="hudPartner">Partner</span><span id="mateState"></span></div>
 </div>
-<canvas id="mini" width="138" height="138" data-i18n-aria="aMap" role="img" aria-label="Map" hidden></canvas>
+<canvas id="mini" width="161" height="161" data-i18n-aria="aMap" role="img" aria-label="Map" hidden></canvas>
 <div id="msg" role="status"></div>
 <div id="prog"></div>
 <div id="note" aria-live="polite"></div>
@@ -268,6 +275,7 @@ button.primary { border-color: var(--bone); }
     <div class="actions" role="group">
       <button type="button" data-lang="en" lang="en">English</button>
       <button type="button" data-lang="ja" lang="ja">日本語</button>
+      <button type="button" data-lang="zh-Hant" lang="zh-Hant">繁體中文</button>
     </div>
   </div>
   <button id="setClose" class="primary" type="button" data-i18n="close">Close</button>

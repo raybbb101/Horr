@@ -1,7 +1,7 @@
 /* Lights Out at Ashgrove: a raycast horror game with four stages and online co-op. */
 (() => {
 'use strict';
-const VERSION = 6;
+const VERSION = 7;
 const MAXP = 4;
 const $ = id => document.getElementById(id);
 const cvs = $('game'), ctx = cvs.getContext('2d');
@@ -28,7 +28,7 @@ const STAGES = [
   { key: 'chapel', mon: 'shade', obj: 'candle', objN: 4, door: 'chapel', hold: 2, amb: [.95, .72, .7], ambK: .5, drain: 1.3, bats: 6, cams: 2, flares: 1, loops: 60, rooms: 5, drone: 49, dark: true }
 ];
 const I18N = window.ASH_I18N;
-let LANG = store.get('ashgrove-lang') === 'ja' ? 'ja' : 'en';
+let LANG = I18N[store.get('ashgrove-lang')] ? store.get('ashgrove-lang') : 'en';
 const L = () => I18N[LANG];
 const stx = (i = stageIdx) => L().stages[i];
 function t(key, p) {
@@ -678,10 +678,14 @@ function moveToward(tx, ty, step) {
 }
 function respawnMonster() {
   const ps = alive();
-  const far = floors.filter(i => { const c = centre(i); return ps.every(p => dist(p, c) >= 9); });
-  const pool = far.length ? far : floors; Object.assign(M, centre(pool[rand(pool.length)]));
-  M.st = 'wander'; M.stun = 0; M.gone = 0; M.lost = 0; pickWander();
+  // come back somewhere random, well away from everyone, and stand still a moment before moving
+  const awayFrom = r => floors.filter(i => { const c = centre(i); return ps.every(p => dist(p, c) >= r); });
+  let pool = awayFrom(12); if (!pool.length) pool = awayFrom(9); if (!pool.length) pool = floors;
+  Object.assign(M, centre(pool[rand(pool.length)]));
+  M.st = 'wander'; M.stun = 0; M.gone = 0; M.lost = 0; M.stuck = 0; M.wake = time + 3;
+  const c = floors[rand(floors.length)]; M.wx = c % MW + .5; M.wy = ((c / MW) | 0) + .5;
 }
+const BANISH_FLARE = 35, BANISH_FLASH = 30; // seconds a weapon keeps the monster away
 function banish(sec, msg) {
   emit('banish', M.x, M.y, false, 20); M.gone = sec; M.stun = 0;
   if (msg) sayAll(msg);
@@ -715,7 +719,7 @@ function hostMonster(dt) {
     if (M.frozen) M.st = 'still'; else { M.st = 'hunt'; tx = near.x; ty = near.y; sp = 1.9 + k * .15; }
   } else if (stage.mon === 'blind') {
     const lure = flares.find(f => f.t > 0);
-    if (lure) { M.st = 'hunt'; M.lx = lure.x; M.ly = lure.y; if (dist(lure, M) < 1.3) { banish(14, 'drownedBanish'); return 0; } }
+    if (lure) { M.st = 'hunt'; M.lx = lure.x; M.ly = lure.y; if (dist(lure, M) < 1.3) { banish(BANISH_FLARE, 'drownedBanish'); return 0; } }
     else {
       let heard = null, hd = 1e9;
       for (const p of ps) {
@@ -767,15 +771,15 @@ function useWeapon(p, w) {
     hearNoise(p.x, p.y, 10);
     if (stage.mon === 'blind') { tell(p, 'flashBlind'); return; }
     if (here && d < 9 && inView(p, M.x, M.y, .5)) {
-      if (stage.mon === 'shade') banish(15, 'flashShade');
-      else if (stage.mon === 'statue') { M.stun = 6; tell(p, 'flashStatue'); }
-      else { M.stun = 4; M.st = 'search'; M.lx = p.x; M.ly = p.y; tell(p, 'flashStun'); }
+      if (stage.mon === 'shade') banish(BANISH_FLASH, 'flashShade');
+      else if (stage.mon === 'statue') { M.stun = 7.5; tell(p, 'flashStatue'); }
+      else { M.stun = 5.5; M.st = 'search'; M.lx = p.x; M.ly = p.y; tell(p, 'flashStun'); }
     } else tell(p, 'flashMiss', null, 2);
   } else {
     flares.push({ x: p.x, y: p.y, t: 10, ct: 0 });
     emit('flare', p.x, p.y, false);
     if (stage.mon === 'blind') { if (here) tell(p, 'flareWater'); return; }
-    if (here && d < 3.5) banish(15, 'flareBanish');
+    if (here && d < 3.5) banish(BANISH_FLARE, 'flareBanish');
     else tell(p, 'flareLit', null, 2.5);
   }
 }
@@ -1071,7 +1075,7 @@ function present() {
   ctx.drawImage(low, (cw - dw) / 2, (ch - dh) / 2 + me.bobY * s, dw, dh);
   if (flashFX > 0) { ctx.fillStyle = `rgba(255,255,250,${flashFX * .85})`; ctx.fillRect(0, 0, cw, ch); }
 }
-const MS = 6;
+const MS = 7;
 function drawMini() {
   const c = $('mini'), g = c.getContext('2d');
   g.clearRect(0, 0, c.width, c.height);

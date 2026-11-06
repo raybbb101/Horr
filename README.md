@@ -22,8 +22,8 @@ The map in the top right starts blank and fills in as you see the halls (farther
 
 You start each stage with at least one of each, and you can find more (up to 3 each). In co-op the whole team shares one kit.
 
-- **Camera flash** stuns the monster you point it at. It tears the Hollow apart for a while, and pins the Mannequin in place. The Drowned is blind, so the click only tells it where you are.
-- **Flare** burns for 10 seconds. Lit next to a monster, it sends the monster away for 15 seconds. While it burns, monsters won't come near it. The Drowned is drawn to it instead, and sinks when it gets there.
+- **Camera flash** stuns the monster you point it at for about 5 seconds. It tears the Hollow apart for a while, and pins the Mannequin in place. The Drowned is blind, so the click only tells it where you are.
+- **Flare** burns for 10 seconds. Lit next to a monster, it sends the monster away for 35 seconds. It then comes back at a random spot at least 12 tiles from everyone and stands still for a few seconds before it moves. While it burns, monsters won't come near it. The Drowned is drawn to it instead, and sinks when it gets there.
 
 ## Co-op (up to 4 players, online)
 
@@ -49,7 +49,7 @@ Online play uses [PeerJS](https://peerjs.com/) (`vendor/peerjs.min.js`, MIT lice
 
 ## Settings and language
 
-**Settings** (on the title screen and in the pause menu) switches the language between English (default) and Japanese (日本語). The choice is remembered on the device. In co-op each player can use a different language, because the game sends message IDs between players, not text.
+**Settings** (on the title screen and in the pause menu) switches the language between English (default), Japanese (日本語) and Traditional Chinese (繁體中文). The choice is remembered on the device. In co-op each player can use a different language, because the game sends message IDs between players, not text.
 
 All text lives in `i18n.js`. To add a language, copy the `en` block, translate it, and add a button with `data-lang="<code>"` to the Settings screen in `index.html`.
 
@@ -62,6 +62,6 @@ All text lives in `i18n.js`. To add a language, copy the `en` block, translate i
 
 - `index.html`: screens and styling
 - `game.js`: the game (raycaster, stages, monsters, weapons, audio, co-op netcode)
-- `i18n.js`: all English and Japanese text
+- `i18n.js`: all English, Japanese and Traditional Chinese text
 - `sw.js`, `manifest.webmanifest`, `icons/`: installable app and offline support
 - `vendor/peerjs.min.js`: PeerJS 1.5.4 for online play
